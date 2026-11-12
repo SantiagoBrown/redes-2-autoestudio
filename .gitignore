@@ -8,3 +8,7 @@ boceto-original/
 # Archivos temporales de revisión
 qa-*.html
 *.tmp
+_texto_extraido/
+modules_*.txt
+modules_*.js
+modules_check.js

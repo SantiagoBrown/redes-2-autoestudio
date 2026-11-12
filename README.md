@@ -22,14 +22,19 @@ Aplicación web interactiva de **un solo archivo** (`index.html`) para estudiar 
 
 | Módulo | Tema | Práctica |
 | --- | --- | --- |
-| 01 | Conmutación de Capa 2 (MAC, VLAN, 802.1Q, STP) | 3 preguntas |
-| 02 | Calidad de Servicio (DSCP, colas, policing/shaping) | 3 preguntas |
-| 03 | IPv6 (formato, link-local, NDP, SLAAC, Dual Stack) | 3 preguntas |
+| 01 | Conmutación de Capa 2 / Switching (MAC, VLAN, 802.1Q, EtherChannel, DTP) | 3 preguntas |
+| 02 | Spanning Tree (STP, RSTP, PVST+, PortFast, BPDU Guard) | 3 preguntas |
+| 03 | Redes WAN (topologías, PPP/HDLC, GRE, NAT, MPLS, DMVPN) | 3 preguntas |
+| 04 | Calidad de Servicio (DSCP, colas, policing/shaping) | 3 preguntas |
+| 05 | IPv6 (formato, link-local, NDP, SLAAC, Dual Stack) | 3 preguntas |
+| 06 | Automatización y Gestión (SDN, DNA Center, REST, SNMP, Syslog) | 3 preguntas |
+| 07 | Integración WAN (troncales, GRE, Metro Ethernet, SD-WAN, MPLS) | 3 preguntas |
+| 08 | Integración de Redes y VPN (sitio a sitio, acceso remoto, GRE/IPSec, IPv4/IPv6) | 3 preguntas |
 
 Cada módulo tiene tres pasos: **Teoría → Video → Práctica**. El progreso se guarda en `localStorage` y el roadmap de la barra lateral muestra qué pasos ya completaste.
 
 - Un módulo se considera completado cuando haces la teoría, ves el video (si existe) y apruebas la práctica con **2 de 3** respuestas correctas.
-- El módulo 02 todavía no tiene grabación: el video es opcional y no bloquea el progreso. Si agregas el archivo, el reproductor aparece automáticamente.
+- El módulo 04 todavía no tiene grabación: el video es opcional y no bloquea el progreso. Si agregas el archivo, el reproductor aparece automáticamente.
 
 ---
 
@@ -39,11 +44,15 @@ Los nombres deben coincidir exactamente y estar en la misma carpeta que `index.h
 
 | Módulo | Archivo | Estado |
 | --- | --- | --- |
-| 01 · Capa 2 | `videog1.mp4` | Principal (Switching avanzado) |
-| 01 · Capa 2 | `video2.mp4` | Complemento (Spanning Tree) |
-| 02 · QoS | `video4-qos.mp4` | Opcional, pendiente de agregar |
-| 03 · IPv6 | `modulo4-ipv6.mp4` | Principal |
-| 03 · IPv6 | `videog5.mp4` | Complemento |
+| 01 · Switching | `videog1.mp4` | Principal (Switching avanzado) |
+| 02 · STP | `video2.mp4` | Principal (Spanning Tree) |
+| 03 · WAN | `video3.mp4` | Principal (Redes WAN) |
+| 04 · QoS | `video4-qos.mp4` | Opcional, pendiente de agregar |
+| 05 · IPv6 | `modulo4-ipv6.mp4` | Principal (Fundamentos de IPv6) |
+| 05 · IPv6 | `videog5.mp4` | Complemento (IPv6 en práctica) |
+| 06 · Automatización | `video6.mp4` | Principal (Automatización y gestión) |
+| 07 · Integración WAN | `video7.mp4` | Principal (Integración WAN) |
+| 08 · VPN | `video8.mp4` | Principal (Integración y VPN) |
 
 Para agregar el video de QoS, copia el archivo con el nombre `video4-qos.mp4`. No hace falta tocar el código.
 
@@ -109,11 +118,15 @@ Si abres el archivo en modo incógnito, el progreso se perderá al cerrar la ven
 recursos de aprendizaje/
 ├── index.html              ← toda la aplicación (React + Tailwind)
 ├── README.md
-├── videog1.mp4             ← Módulo 1
-├── video2.mp4              ← Módulo 1 (complemento)
-├── modulo4-ipv6.mp4        ← Módulo 3
-├── videog5.mp4             ← Módulo 3 (complemento)
-├── video4-qos.mp4          ← opcional, agrégalo para el Módulo 2
+├── videog1.mp4             ← Módulo 01 (Switching)
+├── video2.mp4              ← Módulo 02 (STP)
+├── video3.mp4              ← Módulo 03 (WAN)
+├── video4-qos.mp4          ← opcional, agrégalo para el Módulo 04 (QoS)
+├── modulo4-ipv6.mp4        ← Módulo 05 (IPv6)
+├── videog5.mp4             ← Módulo 05 (IPv6 complemento)
+├── video6.mp4              ← Módulo 06 (Automatización)
+├── video7.mp4              ← Módulo 07 (Integración WAN)
+├── video8.mp4              ← Módulo 08 (VPN)
 ├── G1.pdf … G8.pdf         ← material de clase
 ├── recurso*.pdf
 └── boceto-original/        ← versión anterior (HTML + CSS + JS separados)

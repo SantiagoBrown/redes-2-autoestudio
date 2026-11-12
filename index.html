@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#05080C" />
 <title>Redes 2 · Ruta de autoestudio</title>
-<meta name="description" content="Ruta guiada de autoestudio para Redes 2: conmutación de capa 2, QoS e IPv6 con microlearning, técnica Feynman y active recall." />
+<meta name="description" content="Ruta guiada de autoestudio para Redes 2: switching, STP, WAN, QoS, IPv6, automatización, integración WAN y VPN con microlearning, técnica Feynman y active recall." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -156,321 +156,799 @@
     /* ------------------------------------------------------------------ */
 
     const MODULES = [
+  {
+    id: 'l2',
+    n: '01',
+    title: 'Conmutación de Capa 2 (Switching)',
+    short: 'Switching',
+    accent: '#38BDF8',
+    duration: '20–25 min',
+    tagline: 'Switches que aprenden, VLANs que separan y trunks que etiquetan.',
+    intro: 'El día a día de una LAN: cómo el switch decide por dónde enviar cada trama, cómo las VLAN crean redes separadas sobre el mismo equipo y cómo EtherChannel y DTP optimizan y protegen los enlaces.',
+    analogy: 'Un switch es el portero de un edificio de oficinas. Al principio no conoce a nadie, pero anota en su libreta qué nombre (dirección MAC) vive en cada oficina (puerto). Cuando llega una carta, la entrega directo a esa oficina en lugar de gritar por todos los pasillos. Una VLAN es dividir el edificio en pisos: todos usan el mismo ascensor, pero un piso no ve lo que pasa en otro. Y EtherChannel es unir tres puertas para que entre más gente a la vez.',
+    oneLiner: 'El switch aprende y reenvía; la VLAN separa; el trunk etiqueta; EtherChannel suma ancho de banda y DTP se deshabilita por seguridad.',
+    videos: [
+      { src: 'videog1.mp4', label: 'Clase G1 · Switching avanzado', tag: 'Principal' }
+    ],
+    sections: [
       {
-        id: 'l2',
-        n: '01',
-        title: 'Conmutación de Capa 2',
-        short: 'Capa 2',
-        accent: '#38BDF8',
-        duration: '20–25 min',
-        tagline: 'Switches que aprenden, VLANs que separan y STP que evita bucles.',
-        intro: 'El día a día de una LAN: cómo el switch decide por dónde enviar cada trama, cómo las VLAN crean redes separadas sobre el mismo equipo y cómo STP mantiene la redundancia sin tormentas de broadcast.',
-        analogy: 'Un switch es el portero de un edificio de oficinas. Al principio no conoce a nadie, pero anota en su libreta qué nombre (dirección MAC) vive en cada oficina (puerto). Cuando llega una carta, la entrega directo a esa oficina en lugar de gritar por todos los pasillos. Una VLAN es dividir el edificio en pisos: todos usan el mismo ascensor, pero un piso no ve lo que pasa en otro. Y STP es el portero que cierra una escalera de emergencia redundante para que nadie corra en círculos.',
-        oneLiner: 'El switch aprende y reenvía; la VLAN separa; el trunk etiqueta; STP bloquea el camino extra para que la red no entre en bucle.',
-        videos: [
-          { src: 'videog1.mp4', label: 'Clase G1 · Switching avanzado', tag: 'Principal' },
-          { src: 'video2.mp4', label: 'Clase G2 · Spanning Tree', tag: 'Complemento' }
+        icon: 'table',
+        title: 'La tabla MAC: aprender antes de decidir',
+        intro: 'Un switch no nace sabiendo dónde está cada equipo. Lo aprende mirando el tráfico que pasa por sus puertos.',
+        bullets: [
+          { t: 'Aprende la MAC de origen', d: 'cuando llega una trama, asocia esa MAC al puerto por el que entró.' },
+          { t: 'Si conoce la MAC de destino', d: 'reenvía la trama solo por ese puerto (forwarding).' },
+          { t: 'Si no la conoce', d: 'la inunda por todos los puertos de esa VLAN, menos el de origen (unknown unicast flooding).' },
+          { t: 'Si el destino está en el mismo puerto', d: 'la descarta (filtering).' },
+          { t: 'Las entradas envejecen', d: 'tras unos 5 minutos sin tráfico, para adaptarse a equipos que se mueven.' }
         ],
-        sections: [
-          {
-            icon: 'table',
-            title: 'La tabla MAC: aprender antes de decidir',
-            intro: 'Un switch no nace sabiendo dónde está cada equipo. Lo aprende mirando el tráfico que pasa por sus puertos.',
-            bullets: [
-              { t: 'Aprende la MAC de origen', d: 'cuando llega una trama, asocia esa MAC al puerto por el que entró.' },
-              { t: 'Si conoce la MAC de destino', d: 'reenvía la trama solo por ese puerto (forwarding).' },
-              { t: 'Si no la conoce', d: 'la inunda por todos los puertos de esa VLAN, menos el de origen (unknown unicast flooding).' },
-              { t: 'Si el destino está en el mismo puerto', d: 'la descarta (filtering).' },
-              { t: 'Las entradas envejecen', d: 'tras unos 5 minutos sin tráfico, para adaptarse a equipos que se mueven.' }
-            ],
-            note: 'Un hub repite a todos; un switch decide. Esa diferencia es la base de una LAN moderna.'
-          },
-          {
-            icon: 'layers',
-            title: 'VLANs: varios mundos dentro del mismo switch',
-            intro: 'Una VLAN es un dominio de broadcast lógico. Separa tráfico sin comprar un switch por cada departamento.',
-            bullets: [
-              { t: 'Misma VLAN = mismo dominio de broadcast', d: 'dos equipos en VLAN distintas no se ven sin un router o un switch de capa 3.' },
-              { t: 'Puerto access', d: 'pertenece a una sola VLAN y entrega las tramas sin etiqueta al dispositivo final.' },
-              { t: 'Enlace trunk', d: 'transporta varias VLANs entre switches o hacia un router; usa etiquetas 802.1Q.' },
-              { t: 'Etiqueta 802.1Q', d: 'añade 4 bytes a la trama; el VLAN ID ocupa 12 bits (hasta 4094 VLANs usables).' },
-              { t: 'VLAN nativa', d: 'la única que cruza el trunk sin etiqueta. Debe coincidir en ambos extremos.' }
-            ],
-            table: {
-              headers: ['Puerto access', 'Enlace trunk'],
-              rows: [
-                ['Conecta un dispositivo final', 'Conecta switches, routers o servidores con varias VLANs'],
-                ['Pertenece a una sola VLAN', 'Transporta muchas VLANs a la vez'],
-                ['Tramas sin etiqueta', 'Tramas con etiqueta 802.1Q'],
-                ['Configuración simple', 'Requiere acordar VLAN nativa y VLAN permitidas']
-              ]
-            },
-            note: 'Si una VLAN no está permitida en el trunk, no cruza. Ese fallo no se arregla cambiando direcciones IP.'
-          },
-          {
-            icon: 'shield',
-            title: 'STP: redundancia sin bucles',
-            intro: 'Los cables extra salvan la red si algo falla, pero también crean caminos circulares. STP elige un árbol sin bucles.',
-            bullets: [
-              { t: 'El problema', d: 'un broadcast puede girar para siempre (broadcast storm) y la tabla MAC oscila (MAC flapping).' },
-              { t: 'Root Bridge', d: 'gana el switch con el menor Bridge ID (prioridad + MAC). La prioridad por defecto es 32768.' },
-              { t: 'Puerto raíz', d: 'en cada switch, el puerto con el menor costo hacia el Root Bridge.' },
-              { t: 'Roles de puerto', d: 'Root (hacia el root), Designado (reenvía) y Alternado o Bloqueado (respaldo listo).' },
-              { t: 'Convergencia', d: 'si el camino activo falla, STP activa el respaldo. RSTP (802.1w) converge en segundos.' }
-            ],
-            note: 'STP no elimina el cable redundante: lo deja en espera para usarlo cuando haga falta.'
-          }
-        ],
-        chips: ['Tabla MAC = memoria', 'VLAN = separación lógica', 'Trunk = 802.1Q', 'STP = un solo camino activo'],
-        feynmanPrompt: 'Ejemplo: «Un switch es como un portero que aprende en qué oficina vive cada persona…».',
-        quiz: [
-          {
-            question: 'El switch recibe una trama hacia una MAC que no está en su tabla. ¿Qué hace?',
-            options: [
-              'La descarta y avisa al emisor',
-              'La envía solo por el puerto del router',
-              'La inunda por todos los puertos de esa VLAN, excepto el de origen',
-              'La guarda en cola hasta aprender la MAC de destino'
-            ],
-            answer: 2,
-            why: 'Es unknown unicast flooding: el switch inunda dentro de la VLAN para no perder la trama. Cuando el destino responda, aprenderá su MAC y los siguientes envíos serán unicast.'
-          },
-          {
-            question: 'Un trunk transporta las VLAN 10 y 20 entre dos switches. ¿Qué permite saber al switch remoto a qué VLAN pertenece cada trama?',
-            options: [
-              'La dirección MAC de destino',
-              'La etiqueta 802.1Q insertada en la trama',
-              'El TTL del paquete IP',
-              'El número del puerto físico'
-            ],
-            answer: 1,
-            why: '802.1Q añade una etiqueta de 4 bytes con un VLAN ID de 12 bits. El puerto access la quita antes de entregar la trama al equipo final; la VLAN nativa es la única que viaja sin etiqueta en el trunk.'
-          },
-          {
-            question: '¿Quién gana la elección de Root Bridge en STP?',
-            options: [
-              'El switch con la prioridad más alta',
-              'El switch con el menor Bridge ID (prioridad + MAC)',
-              'El switch con más puertos activos',
-              'El switch que se encendió primero'
-            ],
-            answer: 1,
-            why: 'Gana el menor Bridge ID. La prioridad por defecto es 32768 y, si hay empate, decide la MAC más baja. Todos los demás switches construyen el árbol sin bucles apuntando hacia ese root.'
-          }
-        ]
+        note: 'Un hub repite a todos; un switch decide. Esa diferencia es la base de una LAN moderna.'
       },
       {
-        id: 'qos',
-        n: '02',
-        title: 'Calidad de Servicio (QoS)',
-        short: 'QoS',
-        accent: '#A78BFA',
-        duration: '20–25 min',
-        tagline: 'No hay más ancho de banda: hay mejores decisiones bajo congestión.',
-        intro: 'Cuando la red se llena, alguien tiene que esperar. QoS decide a quién afecta esa espera usando clasificación, marcado DSCP, colas y límites de tráfico.',
-        analogy: 'QoS es el triaje de urgencias de un hospital. No atiende al que llegó primero, sino al que no puede esperar: una videollamada (dolor en el pecho) pasa antes que una descarga (un resfriado). El hospital no crea más médicos ni más camas; decide mejor a quién atiende primero y a quién hace esperar.',
-        oneLiner: 'QoS no fabrica ancho de banda: decide qué tráfico sufre cuando la red se llena y protege al que no tolera retraso.',
-        videoOptional: true,
-        videos: [
-          { src: 'video4-qos.mp4', label: 'Clase de QoS', tag: 'Pendiente' }
+        icon: 'layers',
+        title: 'VLANs y enlaces troncales',
+        intro: 'Una VLAN es un dominio de broadcast lógico. Separa tráfico sin comprar un switch por cada departamento.',
+        bullets: [
+          { t: 'Misma VLAN = mismo dominio de broadcast', d: 'dos equipos en VLAN distintas no se ven sin un router o un switch de capa 3.' },
+          { t: 'Puerto access', d: 'pertenece a una sola VLAN y entrega las tramas sin etiqueta al dispositivo final.' },
+          { t: 'Enlace trunk', d: 'transporta varias VLANs entre switches o hacia un router; usa etiquetas 802.1Q.' },
+          { t: 'Etiqueta 802.1Q', d: 'añade 4 bytes a la trama; el VLAN ID ocupa 12 bits (hasta 4094 VLANs usables).' },
+          { t: 'VLAN nativa', d: 'la única que cruza el trunk sin etiqueta. Debe coincidir en ambos extremos.' }
         ],
-        sections: [
-          {
-            icon: 'zap',
-            title: 'Los tres enemigos: retardo, jitter y pérdida',
-            intro: 'El ancho de banda es solo una parte del problema. Una llamada puede sonar mal incluso con velocidad de sobra.',
-            bullets: [
-              { t: 'Retardo (latencia)', d: 'tiempo que tarda un paquete en llegar. La voz interactiva tolera aproximadamente 150 ms de extremo a extremo.' },
-              { t: 'Jitter', d: 'variación del retardo entre paquetes consecutivos. Aunque el promedio sea bueno, la voz se entrecorta.' },
-              { t: 'Pérdida', d: 'paquetes descartados por congestión. La voz tolera alrededor de un 1 %; una descarga puede reintentar.' },
-              { t: 'Ancho de banda', d: 'capacidad del enlace. Sin QoS, la descarga más agresiva puede ocupar casi toda la cola.' }
-            ],
-            note: 'Velocidad no es lo mismo que calidad. Un enlace rápido con jitter alto arruina una videollamada.'
-          },
-          {
-            icon: 'target',
-            title: 'La cadena QoS: clasificar, marcar y encolar',
-            intro: 'QoS es una tubería de decisiones. Si el paquete no se identifica bien al inicio, el resto del camino no puede ayudarlo.',
-            bullets: [
-              { t: 'Clasificar', d: 'reconocer el tráfico por interfaz, ACL, puerto o aplicación (por ejemplo, NBAR).' },
-              { t: 'Marcar', d: 'escribir la prioridad en el paquete. En IP se usa DSCP: 6 bits del campo DS (ToS en IPv4, Traffic Class en IPv6).' },
-              { t: 'Capa 2', d: 'Ethernet también puede marcar con CoS 802.1p: 3 bits dentro de la etiqueta 802.1Q.' },
-              { t: 'Encolar y planificar', d: 'PQ da prioridad estricta, WFQ reparte por pesos y LLQ reserva una cola prioritaria con límite para voz.' },
-              { t: 'Gestionar la congestión', d: 'WRED empieza a descartar antes de que la cola esté llena, para evitar el tail drop masivo.' }
-            ],
-            table: {
-              headers: ['Marcado DSCP', 'Valor', 'Uso típico'],
-              rows: [
-                ['EF (Expedited Forwarding)', '46', 'Voz interactiva: mínima latencia, jitter y pérdida'],
-                ['AF41', '34', 'Videoconferencia y video en tiempo real'],
-                ['AF31', '26', 'Señalización y streaming'],
-                ['CS1', '8', 'Backups y tráfico “scavenger”'],
-                ['BE / CS0', '0', 'Mejor esfuerzo: el valor por defecto']
-              ]
-            },
-            note: 'Marcar sin confiar es peligroso: un usuario podría etiquetar sus descargas como voz. Por eso se define un límite de confianza (trust boundary) en el acceso.'
-          },
-          {
-            icon: 'shield',
-            title: 'Policing, shaping y los modelos de QoS',
-            intro: 'Limitar el tráfico no es lo mismo que ordenarlo. Y no todos los modelos de QoS escalan igual.',
-            bullets: [
-              { t: 'Policing', d: 'mide el ritmo y descarta o remarca el exceso de inmediato. No guarda nada: es un torniquete.' },
-              { t: 'Shaping', d: 'retiene el exceso en un buffer y lo envía suavizado. Añade retardo, pero reduce pérdidas.' },
-              { t: 'Best Effort', d: 'todos los paquetes reciben el mismo trato. Es lo que ocurre si no configuras QoS.' },
-              { t: 'IntServ', d: 'reserva recursos por flujo con RSVP. Da garantías fuertes, pero no escala bien en redes grandes.' },
-              { t: 'DiffServ', d: 'agrupa el tráfico en clases marcadas con DSCP y da un tratamiento por salto. Es el modelo dominante.' }
-            ],
-            note: 'Regla mental: el policer corta al que se pasa; el shaper lo hace esperar. Si no quieres pérdidas, shapea; si quieres castigar el exceso, policea.'
-          }
-        ],
-        chips: ['Retardo + jitter + pérdida', 'DSCP = 6 bits', 'EF 46 = voz', 'Policing descarta · Shaping espera'],
-        feynmanPrompt: 'Ejemplo: «QoS es como el triaje de un hospital: primero atiende lo urgente, aunque llegue después…».',
-        quiz: [
-          {
-            question: '¿Dónde vive el valor DSCP que QoS usa para marcar la prioridad?',
-            options: [
-              'En la cabecera Ethernet, dentro de la dirección MAC',
-              'En la cabecera IP, en los 6 bits del campo DS',
-              'En el puerto TCP de origen',
-              'Dentro del payload de la aplicación'
-            ],
-            answer: 1,
-            why: 'DSCP ocupa 6 bits del campo DS (llamado ToS en IPv4 y Traffic Class en IPv6). El marcado CoS de Ethernet es distinto: usa 3 bits en la etiqueta 802.1Q.'
-          },
-          {
-            question: 'Necesitas priorizar voz con baja latencia, jitter y pérdida. ¿Qué marcado es el estándar?',
-            options: [
-              'AF41 (34)',
-              'EF (46)',
-              'CS1 (8)',
-              'BE (0)'
-            ],
-            answer: 1,
-            why: 'EF (Expedited Forwarding, DSCP 46) es el PHB pensado para voz interactiva. AF41 se usa para video, CS1 para tráfico de relleno y BE es el mejor esfuerzo por defecto.'
-          },
-          {
-            question: 'Un proveedor te contrata 100 Mbps y descarta de inmediato todo lo que excede ese ritmo. ¿Qué mecanismo aplica?',
-            options: [
-              'Shaping',
-              'Policing',
-              'Queuing',
-              'Fragmentación'
-            ],
-            answer: 1,
-            why: 'Policing mide el ritmo y descarta o remarca el exceso al instante, sin buffer. Shaping también limita, pero retiene y suaviza el envío; añade retardo en lugar de pérdidas.'
-          }
-        ]
+        table: {
+          headers: ['Puerto access', 'Enlace trunk'],
+          rows: [
+            ['Conecta un dispositivo final', 'Conecta switches, routers o servidores con varias VLANs'],
+            ['Pertenece a una sola VLAN', 'Transporta muchas VLANs a la vez'],
+            ['Tramas sin etiqueta', 'Tramas con etiqueta 802.1Q'],
+            ['Configuración simple', 'Requiere acordar VLAN nativa y VLAN permitidas']
+          ]
+        },
+        note: 'Si una VLAN no está permitida en el trunk, no cruza. Ese fallo no se arregla cambiando direcciones IP.'
       },
       {
-        id: 'ipv6',
-        n: '03',
-        title: 'IPv6',
-        short: 'IPv6',
-        accent: '#34D399',
-        duration: '20–25 min',
-        tagline: '128 bits, direcciones link-local y una red que se configura sola.',
-        intro: 'IPv6 no es “IPv4 con más números”: cambia el formato de las direcciones, elimina el broadcast y usa NDP y SLAAC para que los equipos encuentren su camino.',
-        analogy: 'IPv4 es una ciudad con unos 4 mil millones de direcciones: se quedó sin números. IPv6 no es solo añadir dígitos; es un sistema nuevo con 340 sextillones de direcciones, suficientes para dar una a cada grano de arena del planeta. Es como pasar de un número de teléfono de 10 dígitos a uno de 39, con reglas de escritura más limpias.',
-        oneLiner: 'IPv6 usa 128 bits en hexadecimal, elimina el broadcast y permite que cada dispositivo se autoconfigure al escuchar al router.',
-        videos: [
-          { src: 'modulo4-ipv6.mp4', label: 'Clase · Fundamentos de IPv6', tag: 'Principal' },
-          { src: 'videog5.mp4', label: 'Clase G5 · IPv6 en práctica', tag: 'Complemento' }
+        icon: 'shield',
+        title: 'EtherChannel y DTP',
+        intro: 'EtherChannel suma ancho de banda y redundancia; DTP automatiza trunks pero conviene deshabilitarlo.',
+        bullets: [
+          { t: 'EtherChannel', d: 'combina varios puertos físicos en uno lógico, con mayor ancho de banda y tolerancia a fallos.' },
+          { t: 'LACP (802.3ad)', d: 'estándar IEEE; modos active y passive.' },
+          { t: 'PAgP', d: 'propietario de Cisco; modos auto y desirable.' },
+          { t: 'Balanceo de carga', d: 'distribuye tráfico según MAC, IP o puertos TCP/UDP.' },
+          { t: 'DTP', d: 'negocia dinámicamente si un puerto será trunk o access; puede causar VLAN hopping.' },
+          { t: 'Recomendación', d: 'deshabilitar DTP y configurar los puertos explícitamente como trunk o access.' }
         ],
-        sections: [
-          {
-            icon: 'globe',
-            title: 'Leer una dirección IPv6 sin miedo',
-            intro: 'Son 128 bits escritos como 8 grupos de 4 dígitos hexadecimales separados por dos puntos. Dos reglas y ya sabes leerlas.',
-            bullets: [
-              { t: 'Regla 1: quita ceros a la izquierda', d: 'de cada grupo. 0db8 se escribe db8; 0001 se escribe 1.' },
-              { t: 'Regla 2: usa :: una sola vez', d: 'para reemplazar el bloque más largo de grupos en cero. No puede repetirse en la misma dirección.' },
-              { t: 'El prefijo indica la red', d: '/64 es el tamaño estándar de una LAN; /48 identifica un sitio y /128 un único host.' },
-              { t: 'Interfaz ID', d: 'los 64 bits de la derecha identifican la interfaz dentro de la LAN. La parte de red son los 64 bits de la izquierda.' },
-              { t: 'Hexadecimal, no decimal', d: 'cada grupo va de 0000 a ffff. No hay puntos ni máscara decimal como en IPv4.' }
-            ],
-            example: {
-              from: '2001:0db8:0000:0000:0000:0000:0000:0001',
-              to: '2001:db8::1'
-            },
-            note: 'Dos formas de escribir una dirección IPv6 pueden parecer distintas y representar la misma dirección. Por eso conviene normalizarla antes de comparar.'
-          },
-          {
-            icon: 'layers',
-            title: 'Tipos de dirección que sí importan',
-            intro: 'En IPv6 no todo es “una IP”. El prefijo te dice para qué sirve cada dirección y hasta dónde puede viajar.',
-            bullets: [
-              { t: 'Global Unicast (GUA)', d: '2000::/3. Pública y enrutable en Internet, como una dirección postal.' },
-              { t: 'Link-Local', d: 'fe80::/10. Obligatoria en cada interfaz; solo vale en el enlace y se usa para NDP y como next-hop.' },
-              { t: 'Unique Local (ULA)', d: 'fc00::/7. Privada y no enrutable en Internet; cumple un papel parecido a las IPv4 privadas.' },
-              { t: 'Multicast', d: 'ff00::/8. Un paquete hacia muchos destinos. IPv6 no tiene broadcast: usa multicast.' },
-              { t: 'Anycast y loopback', d: 'anycast llega al equipo más cercano de un grupo; ::1 es el loopback local.' }
-            ],
-            table: {
-              headers: ['Prefijo', 'Para qué sirve'],
-              rows: [
-                ['2000::/3', 'Global Unicast: Internet'],
-                ['fe80::/10', 'Link-Local: solo el enlace local'],
-                ['fc00::/7', 'Unique Local: red privada'],
-                ['ff00::/8', 'Multicast: uno a muchos'],
-                ['::1/128', 'Loopback del propio equipo']
-              ]
-            },
-            note: 'Si ves una dirección que empieza por fe80, no intentes hacer ping a través de Internet: está limitada al cable o Wi-Fi donde nació.'
-          },
-          {
-            icon: 'network',
-            title: 'Cómo arranca un equipo: NDP, SLAAC y Dual Stack',
-            intro: 'En IPv6 el router anuncia la red y el equipo se construye su propia dirección. No hace falta un servidor DHCP para todo.',
-            bullets: [
-              { t: 'NDP reemplaza a ARP', d: 'Neighbor Discovery usa ICMPv6 (RS/RA, NS/NA y DAD) para descubrir vecinos y detectar direcciones duplicadas.' },
-              { t: 'SLAAC', d: 'el host escucha el Router Advertisement, toma el prefijo /64 y se forma su propia dirección. Sin DHCP.' },
-              { t: 'DHCPv6 sigue existiendo', d: 'se usa para DNS y otras opciones, o cuando la red marca las flags M/O.' },
-              { t: 'Dual Stack', d: 'el equipo ejecuta IPv4 e IPv6 a la vez y elige según el destino; el DNS devuelve A o AAAA. Es la transición más común.' },
-              { t: 'Túneles y traducción', d: '6in4 transporta IPv6 sobre IPv4; NAT64/DNS64 permite que un host solo IPv6 hable con destinos IPv4.' }
-            ],
-            note: 'Dual Stack no traduce: convive. NAT64 traduce. Son estrategias distintas y conviene no mezclarlas en la explicación.'
-          }
-        ],
-        chips: ['128 bits', 'fe80::/10 = link-local', 'SLAAC + NDP', 'Dual Stack = convivir'],
-        feynmanPrompt: 'Ejemplo: «IPv6 es como ampliar la ciudad con direcciones únicas para cada grano de arena…».',
-        quiz: [
-          {
-            question: '¿Cuál es una representación válida y equivalente de 2001:0db8:0000:0000:0000:0000:0000:0001?',
-            options: [
-              '2001:db8::1',
-              '2001:db8:::1',
-              '2001:db8::1::',
-              '2001:db8:0:0:0:0:0:1:0'
-            ],
-            answer: 0,
-            why: 'Se quitan los ceros a la izquierda y un único :: reemplaza el bloque más largo de grupos en cero. :: no puede repetirse y no se permiten tres dos puntos seguidos ni nueve grupos.'
-          },
-          {
-            question: 'Tu PC tiene la dirección fe80::a1b2 asignada. ¿Qué afirmación es correcta?',
-            options: [
-              'Es global y se enruta por Internet',
-              'Es link-local: solo vale en el enlace y se usa, por ejemplo, para NDP',
-              'Es multicast y llega a todos los equipos',
-              'Es la dirección de loopback'
-            ],
-            answer: 1,
-            why: 'fe80::/10 es link-local. Es obligatoria en cada interfaz, se usa para Neighbor Discovery y como next-hop, y los routers no la reenvían fuera del enlace. Las globales son 2000::/3, multicast ff00::/8 y loopback ::1.'
-          },
-          {
-            question: '¿Qué describe mejor Dual Stack?',
-            options: [
-              'Traducir IPv6 a IPv4 con NAT64',
-              'Ejecutar IPv4 e IPv6 a la vez en el mismo dispositivo y elegir según el destino',
-              'Tener dos routers, uno para cada protocolo',
-              'Asignar dos direcciones IPv4 a cada interfaz'
-            ],
-            answer: 1,
-            why: 'Dual Stack mantiene ambos pilas activas: el DNS devuelve A (IPv4) o AAAA (IPv6) y el host usa la familia del destino. NAT64/DNS64 es traducción para hosts solo IPv6, no dual stack.'
-          }
-        ]
+        note: 'EtherChannel no elimina bucles por sí solo: STP sigue protegiendo la topología. DTP activo en redes no controladas es un riesgo de seguridad.'
       }
-    ];
+    ],
+    chips: ['Tabla MAC = memoria', 'VLAN = separación lógica', 'Trunk = 802.1Q', 'EtherChannel = agregación', 'DTP = deshabilitar'],
+    feynmanPrompt: 'Ejemplo: «Un switch es como un portero que aprende en qué oficina vive cada persona…».',
+    quiz: [
+      {
+        question: 'El switch recibe una trama hacia una MAC que no está en su tabla. ¿Qué hace?',
+        options: [
+          'La descarta y avisa al emisor',
+          'La envía solo por el puerto del router',
+          'La inunda por todos los puertos de esa VLAN, excepto el de origen',
+          'La guarda en cola hasta aprender la MAC de destino'
+        ],
+        answer: 2,
+        why: 'Es unknown unicast flooding: el switch inunda dentro de la VLAN para no perder la trama. Cuando el destino responda, aprenderá su MAC y los siguientes envíos serán unicast.'
+      },
+      {
+        question: 'Un trunk transporta las VLAN 10 y 20 entre dos switches. ¿Qué permite saber al switch remoto a qué VLAN pertenece cada trama?',
+        options: [
+          'La dirección MAC de destino',
+          'La etiqueta 802.1Q insertada en la trama',
+          'El TTL del paquete IP',
+          'El número del puerto físico'
+        ],
+        answer: 1,
+        why: '802.1Q añade una etiqueta de 4 bytes con un VLAN ID de 12 bits. El puerto access la quita antes de entregar la trama al equipo final; la VLAN nativa es la única que viaja sin etiqueta en el trunk.'
+      },
+      {
+        question: '¿Qué protocolo de agregación de enlaces es el estándar IEEE 802.3ad?',
+        options: [
+          'PAgP',
+          'LACP',
+          'DTP',
+          'STP'
+        ],
+        answer: 1,
+        why: 'LACP (Link Aggregation Control Protocol) es el estándar IEEE 802.3ad, con modos active y passive. PAgP es propietario de Cisco; DTP negocia trunks y STP evita bucles.'
+      }
+    ]
+  },
+  {
+    id: 'stp',
+    n: '02',
+    title: 'Protocolos Spanning Tree (STP)',
+    short: 'STP',
+    accent: '#60A5FA',
+    duration: '20–25 min',
+    tagline: 'Redundancia sin bucles: STP elige un solo camino activo.',
+    intro: 'Los cables extra salvan la red si algo falla, pero también crean caminos circulares. STP construye un árbol lógico sin bucles y activa el respaldo cuando el camino activo cae.',
+    analogy: 'STP es el portero que cierra una escalera de emergencia redundante para que nadie corra en círculos. La escalera sigue ahí, lista, pero solo se abre si la principal se bloquea. El switch raíz es el director del edificio que decide qué escaleras se usan.',
+    oneLiner: 'STP bloquea el camino extra para que la red no entre en bucle y lo activa si el principal falla; RSTP converge en segundos.',
+    videos: [
+      { src: 'video2.mp4', label: 'Clase G2 · Spanning Tree', tag: 'Principal' }
+    ],
+    sections: [
+      {
+        icon: 'shield',
+        title: 'STP: cómo evita bucles',
+        intro: 'Un bucle Ethernet genera tormentas de broadcast, duplicación de tramas y colapso de la red.',
+        bullets: [
+          { t: 'El problema', d: 'un broadcast puede girar para siempre (broadcast storm) y la tabla MAC oscila (MAC flapping).' },
+          { t: 'Root Bridge', d: 'gana el switch con el menor Bridge ID (prioridad + MAC). La prioridad por defecto es 32768.' },
+          { t: 'BPDU', d: 'mensajes que los switches intercambian para negociar la topología.' },
+          { t: 'Puerto raíz', d: 'en cada switch, el puerto con el menor costo hacia el Root Bridge.' },
+          { t: 'Roles de puerto', d: 'Root (hacia el root), Designado (reenvía) y Alternado/Bloqueado (respaldo listo).' },
+          { t: 'Estados', d: 'Blocking, Listening, Learning, Forwarding y Disabled.' }
+        ],
+        note: 'STP no elimina el cable redundante: lo deja en espera para usarlo cuando haga falta.'
+      },
+      {
+        icon: 'zap',
+        title: 'RSTP y PVST+',
+        intro: 'RSTP acelera la convergencia; PVST+ ejecuta una instancia por VLAN.',
+        bullets: [
+          { t: 'RSTP (802.1w)', d: 'convergencia en menos de 10 segundos; estados Discarding, Learning y Forwarding.' },
+          { t: 'Propuesta-acuerdo', d: 'permite transición rápida al estado forwarding sin esperar temporizadores clásicos.' },
+          { t: 'Nuevos roles', d: 'Designado, Raíz, Alternativo y Backup.' },
+          { t: 'PVST+', d: 'una instancia de STP por VLAN; balancea tráfico y es compatible con STP estándar.' },
+          { t: 'Costo', d: 'PVST+ consume más recursos del switch al mantener múltiples instancias.' }
+        ],
+        note: 'RSTP es la opción habitual cuando se necesita recuperación rápida ante fallos.'
+      },
+      {
+        icon: 'shield',
+        title: 'PortFast y BPDU Guard',
+        intro: 'PortFast acelera el acceso de equipos finales; BPDU Guard protege contra bucles accidentales.',
+        bullets: [
+          { t: 'PortFast', d: 'permite que puertos de acceso entren directamente en forwarding, útil para PCs, impresoras y teléfonos IP.' },
+          { t: 'BPDU Guard', d: 'desactiva un puerto que recibe BPDUs inesperadamente, protegiendo contra ataques o configuraciones erróneas.' },
+          { t: 'Buena práctica', d: 'usar PortFast solo en puertos de acceso y combinarlo siempre con BPDU Guard.' },
+          { t: 'Configuración', d: 'spanning-tree portfast, spanning-tree bpduguard enable, spanning-tree mode rapid-pvst.' },
+          { t: 'Verificación', d: 'show spanning-tree para revisar el root bridge y los estados de los puertos.' }
+        ],
+        note: 'PortFast en un puerto que conecta a otro switch puede crear un bucle. Por eso se combina con BPDU Guard.'
+      }
+    ],
+    chips: ['Root Bridge = menor Bridge ID', 'RSTP < 10s', 'PortFast solo acceso', 'BPDU Guard protege', 'PVST+ por VLAN'],
+    feynmanPrompt: 'Ejemplo: «STP es como un portero que cierra una escalera redundante para que nadie corra en círculos…».',
+    quiz: [
+      {
+        question: '¿Quién gana la elección de Root Bridge en STP?',
+        options: [
+          'El switch con la prioridad más alta',
+          'El switch con el menor Bridge ID (prioridad + MAC)',
+          'El switch con más puertos activos',
+          'El switch que se encendió primero'
+        ],
+        answer: 1,
+        why: 'Gana el menor Bridge ID. La prioridad por defecto es 32768 y, si hay empate, decide la MAC más baja. Todos los demás switches construyen el árbol sin bucles apuntando hacia ese root.'
+      },
+      {
+        question: '¿Cuál es la ventaja principal de RSTP frente a STP clásico?',
+        options: [
+          'Cifra el tráfico de control',
+          'Converge en menos de 10 segundos',
+          'Elimina la necesidad de BPDUs',
+          'Usa una VLAN por puerto'
+        ],
+        answer: 1,
+        why: 'RSTP (802.1w) mejora la convergencia a menos de 10 segundos mediante estados simplificados (Discarding, Learning, Forwarding) y el mecanismo de propuesta-acuerdo.'
+      },
+      {
+        question: '¿Para qué sirve PortFast?',
+        options: [
+          'Acelera la convergencia en puertos de acceso para equipos finales',
+          'Bloquea BPDUs en puertos trunk',
+          'Crea enlaces troncales automáticamente',
+          'Asigna la VLAN nativa'
+        ],
+        answer: 0,
+        why: 'PortFast permite que los puertos de acceso entren directamente en forwarding, evitando la espera de la convergencia de STP. Debe combinarse con BPDU Guard para proteger la red.'
+      }
+    ]
+  },
+  {
+    id: 'wan',
+    n: '03',
+    title: 'Redes WAN',
+    short: 'WAN',
+    accent: '#F59E0B',
+    duration: '20–25 min',
+    tagline: 'Conectar sedes distantes con protocolos, túneles y tecnologías de proveedor.',
+    intro: 'Las WAN unen LANs distribuidas geográficamente usando enlaces de proveedor y protocolos de capa 2 y 3 especializados para garantizar conectividad, autenticación, encapsulamiento y escalabilidad.',
+    analogy: 'Una WAN es como la red de carreteras entre ciudades. La LAN es el tráfico dentro de un barrio; la WAN son las autopistas y peajes que unen ciudades. MPLS es una autopista con carriles prioritarios; DMVPN crea atajos dinámicos entre ciudades cuando hay tráfico.',
+    oneLiner: 'La WAN conecta sedes con protocolos de enlace (PPP/HDLC), túneles (GRE) y tecnologías de proveedor (MPLS, Metro Ethernet, DMVPN).',
+    videos: [
+      { src: 'video3.mp4', label: 'Clase G3 · Redes WAN', tag: 'Principal' }
+    ],
+    sections: [
+      {
+        icon: 'route',
+        title: 'Topologías y protocolos de enlace',
+        intro: 'La topología define cómo se conectan las sedes; el protocolo de enlace define cómo se autentican y encapsulan los datos.',
+        bullets: [
+          { t: 'Punto a punto', d: 'enlace dedicado entre dos ubicaciones; máxima simplicidad, mayor costo por sede.' },
+          { t: 'Hub and Spoke', d: 'una sede central conecta con todas las sucursales; centraliza administración pero crea un punto único de fallo.' },
+          { t: 'Malla parcial/completa', d: 'múltiples interconexiones entre sitios; más redundancia y más complejidad.' },
+          { t: 'PPP', d: 'protocolo de enlace serial con autenticación PAP o CHAP, compresión y detección de errores.' },
+          { t: 'HDLC', d: 'protocolo por defecto en enlaces seriales Cisco, sin autenticación; simple y eficiente.' }
+        ],
+        note: 'PPP es preferible cuando se requiere autenticación; HDLC es ideal en redes Cisco homogéneas donde la simplicidad es prioritaria.'
+      },
+      {
+        icon: 'layers',
+        title: 'Túneles GRE y NAT',
+        intro: 'GRE encapsula tráfico para unir redes disímiles; NAT traduce direcciones privadas a públicas.',
+        bullets: [
+          { t: 'Túnel GRE', d: 'encapsula paquetes de diversas redes en un túnel punto a punto sobre IP; no cifra por sí solo.' },
+          { t: 'Uso típico', d: 'conectar redes disímiles a través de Internet y transportar protocolos de enrutamiento.' },
+          { t: 'Seguridad', d: 'GRE suele combinarse con IPSec para añadir cifrado.' },
+          { t: 'NAT estático', d: 'mapeo uno a uno entre IP privada y pública.' },
+          { t: 'NAT dinámico y PAT', d: 'asigna IPs públicas de un pool o traduce por puertos (PAT/overload).' }
+        ],
+        note: 'NAT oculta la topología interna y permite que muchas IPs privadas compartan pocas IPs públicas, esencial por la escasez de IPv4.'
+      },
+      {
+        icon: 'network',
+        title: 'Tecnologías WAN avanzadas',
+        intro: 'Metro Ethernet, MPLS y DMVPN ofrecen conectividad escalable y eficiente entre sedes.',
+        bullets: [
+          { t: 'Metro Ethernet', d: 'Ethernet extendido a nivel metropolitano; alta velocidad, simplicidad y compatibilidad con LAN existente.' },
+          { t: 'MPLS', d: 'enruta por etiquetas en lugar de IPs; baja latencia, QoS avanzado e independencia del protocolo de capa 3.' },
+          { t: 'DMVPN', d: 'VPN escalable con túneles dinámicos entre sitios, combinando GRE, NHRP e IPSec.' },
+          { t: 'Ventaja DMVPN', d: 'comunicación directa spoke-to-spoke y creación dinámica de túneles bajo demanda.' },
+          { t: 'SD-WAN', d: 'evolución moderna con controladores centrales y selección dinámica de ruta.' }
+        ],
+        note: 'La WAN evoluciona hacia SD-WAN, con mayor flexibilidad, control centralizado y optimización de costos.'
+      }
+    ],
+    chips: ['PPP = auth', 'HDLC = Cisco simple', 'GRE = encapsula', 'MPLS = etiquetas', 'DMVPN = dinámico'],
+    feynmanPrompt: 'Ejemplo: «Una WAN es como la red de carreteras entre ciudades: la LAN es el barrio y la WAN son las autopistas que las unen…».',
+    quiz: [
+      {
+        question: '¿Qué protocolo de enlace serial ofrece autenticación PAP y CHAP?',
+        options: [
+          'HDLC',
+          'PPP',
+          'GRE',
+          'MPLS'
+        ],
+        answer: 1,
+        why: 'PPP (Point-to-Point Protocol) soporta autenticación PAP y CHAP, compresión y detección de errores. HDLC es el protocolo por defecto en Cisco y no autentica.'
+      },
+      {
+        question: 'GRE por sí solo...',
+        options: [
+          'Cifra y encapsula el tráfico',
+          'Encapsula pero no cifra',
+          'Autentica los extremos del túnel',
+          'Asigna direcciones IP públicas'
+        ],
+        answer: 1,
+        why: 'GRE (Generic Routing Encapsulation) encapsula múltiples protocolos dentro de IP, pero no proporciona cifrado. Suele combinarse con IPSec para asegurar el túnel.'
+      },
+      {
+        question: '¿Qué tecnologías combina DMVPN?',
+        options: [
+          'GRE, NHRP e IPSec',
+          'PPP, HDLC y MPLS',
+          'NAT, DNS y DHCP',
+          'STP, VLAN y QoS'
+        ],
+        answer: 0,
+        why: 'DMVPN (Dynamic Multipoint VPN) combina túneles GRE dinámicos, NHRP para resolución de direcciones e IPSec para cifrado, permitiendo túneles spoke-to-spoke.'
+      }
+    ]
+  },
+  {
+    id: 'qos',
+    n: '04',
+    title: 'Calidad de Servicio (QoS)',
+    short: 'QoS',
+    accent: '#A78BFA',
+    duration: '20–25 min',
+    tagline: 'No hay más ancho de banda: hay mejores decisiones bajo congestión.',
+    intro: 'Cuando la red se llena, alguien tiene que esperar. QoS decide a quién afecta esa espera usando clasificación, marcado DSCP, colas y límites de tráfico.',
+    analogy: 'QoS es el triaje de urgencias de un hospital. No atiende al que llegó primero, sino al que no puede esperar: una videollamada (dolor en el pecho) pasa antes que una descarga (un resfriado). El hospital no crea más médicos ni más camas; decide mejor a quién atiende primero y a quién hace esperar.',
+    oneLiner: 'QoS no fabrica ancho de banda: decide qué tráfico sufre cuando la red se llena y protege al que no tolera retraso.',
+    videoOptional: true,
+    videos: [
+      { src: 'video4-qos.mp4', label: 'Clase de QoS', tag: 'Pendiente' }
+    ],
+    sections: [
+      {
+        icon: 'zap',
+        title: 'Los tres enemigos: retardo, jitter y pérdida',
+        intro: 'El ancho de banda es solo una parte del problema. Una llamada puede sonar mal incluso con velocidad de sobra.',
+        bullets: [
+          { t: 'Retardo (latencia)', d: 'tiempo que tarda un paquete en llegar. La voz interactiva tolera aproximadamente 150 ms de extremo a extremo.' },
+          { t: 'Jitter', d: 'variación del retardo entre paquetes consecutivos. Aunque el promedio sea bueno, la voz se entrecorta.' },
+          { t: 'Pérdida', d: 'paquetes descartados por congestión. La voz tolera alrededor de un 1 %; una descarga puede reintentar.' },
+          { t: 'Ancho de banda', d: 'capacidad del enlace. Sin QoS, la descarga más agresiva puede ocupar casi toda la cola.' }
+        ],
+        note: 'Velocidad no es lo mismo que calidad. Un enlace rápido con jitter alto arruina una videollamada.'
+      },
+      {
+        icon: 'target',
+        title: 'La cadena QoS: clasificar, marcar y encolar',
+        intro: 'QoS es una tubería de decisiones. Si el paquete no se identifica bien al inicio, el resto del camino no puede ayudarlo.',
+        bullets: [
+          { t: 'Clasificar', d: 'reconocer el tráfico por interfaz, ACL, puerto o aplicación (por ejemplo, NBAR).' },
+          { t: 'Marcar', d: 'escribir la prioridad en el paquete. En IP se usa DSCP: 6 bits del campo DS (ToS en IPv4, Traffic Class en IPv6).' },
+          { t: 'Capa 2', d: 'Ethernet también puede marcar con CoS 802.1p: 3 bits dentro de la etiqueta 802.1Q.' },
+          { t: 'Encolar y planificar', d: 'PQ da prioridad estricta, WFQ reparte por pesos y LLQ reserva una cola prioritaria con límite para voz.' },
+          { t: 'Gestionar la congestión', d: 'WRED empieza a descartar antes de que la cola esté llena, para evitar el tail drop masivo.' }
+        ],
+        table: {
+          headers: ['Marcado DSCP', 'Valor', 'Uso típico'],
+          rows: [
+            ['EF (Expedited Forwarding)', '46', 'Voz interactiva: mínima latencia, jitter y pérdida'],
+            ['AF41', '34', 'Videoconferencia y video en tiempo real'],
+            ['AF31', '26', 'Señalización y streaming'],
+            ['CS1', '8', 'Backups y tráfico “scavenger”'],
+            ['BE / CS0', '0', 'Mejor esfuerzo: el valor por defecto']
+          ]
+        },
+        note: 'Marcar sin confiar es peligroso: un usuario podría etiquetar sus descargas como voz. Por eso se define un límite de confianza (trust boundary) en el acceso.'
+      },
+      {
+        icon: 'shield',
+        title: 'Policing, shaping y los modelos de QoS',
+        intro: 'Limitar el tráfico no es lo mismo que ordenarlo. Y no todos los modelos de QoS escalan igual.',
+        bullets: [
+          { t: 'Policing', d: 'mide el ritmo y descarta o remarca el exceso de inmediato. No guarda nada: es un torniquete.' },
+          { t: 'Shaping', d: 'retiene el exceso en un buffer y lo envía suavizado. Añade retardo, pero reduce pérdidas.' },
+          { t: 'Best Effort', d: 'todos los paquetes reciben el mismo trato. Es lo que ocurre si no configuras QoS.' },
+          { t: 'IntServ', d: 'reserva recursos por flujo con RSVP. Da garantías fuertes, pero no escala bien en redes grandes.' },
+          { t: 'DiffServ', d: 'agrupa el tráfico en clases marcadas con DSCP y da un tratamiento por salto. Es el modelo dominante.' }
+        ],
+        note: 'Regla mental: el policer corta al que se pasa; el shaper lo hace esperar. Si no quieres pérdidas, shapea; si quieres castigar el exceso, policea.'
+      }
+    ],
+    chips: ['Retardo + jitter + pérdida', 'DSCP = 6 bits', 'EF 46 = voz', 'Policing descarta · Shaping espera'],
+    feynmanPrompt: 'Ejemplo: «QoS es como el triaje de un hospital: primero atiende lo urgente, aunque llegue después…».',
+    quiz: [
+      {
+        question: '¿Dónde vive el valor DSCP que QoS usa para marcar la prioridad?',
+        options: [
+          'En la cabecera Ethernet, dentro de la dirección MAC',
+          'En la cabecera IP, en los 6 bits del campo DS',
+          'En el puerto TCP de origen',
+          'Dentro del payload de la aplicación'
+        ],
+        answer: 1,
+        why: 'DSCP ocupa 6 bits del campo DS (llamado ToS en IPv4 y Traffic Class en IPv6). El marcado CoS de Ethernet es distinto: usa 3 bits en la etiqueta 802.1Q.'
+      },
+      {
+        question: 'Necesitas priorizar voz con baja latencia, jitter y pérdida. ¿Qué marcado es el estándar?',
+        options: [
+          'AF41 (34)',
+          'EF (46)',
+          'CS1 (8)',
+          'BE (0)'
+        ],
+        answer: 1,
+        why: 'EF (Expedited Forwarding, DSCP 46) es el PHB pensado para voz interactiva. AF41 se usa para video, CS1 para tráfico de relleno y BE es el mejor esfuerzo por defecto.'
+      },
+      {
+        question: 'Un proveedor te contrata 100 Mbps y descarta de inmediato todo lo que excede ese ritmo. ¿Qué mecanismo aplica?',
+        options: [
+          'Shaping',
+          'Policing',
+          'Queuing',
+          'Fragmentación'
+        ],
+        answer: 1,
+        why: 'Policing mide el ritmo y descarta o remarca el exceso al instante, sin buffer. Shaping también limita, pero retiene y suaviza el envío; añade retardo en lugar de pérdidas.'
+      }
+    ]
+  },
+  {
+    id: 'ipv6',
+    n: '05',
+    title: 'IPv6',
+    short: 'IPv6',
+    accent: '#34D399',
+    duration: '20–25 min',
+    tagline: '128 bits, direcciones link-local y una red que se configura sola.',
+    intro: 'IPv6 no es “IPv4 con más números”: cambia el formato de las direcciones, elimina el broadcast y usa NDP y SLAAC para que los equipos encuentren su camino.',
+    analogy: 'IPv4 es una ciudad con unos 4 mil millones de direcciones: se quedó sin números. IPv6 no es solo añadir dígitos; es un sistema nuevo con 340 sextillones de direcciones, suficientes para dar una a cada grano de arena del planeta. Es como pasar de un número de teléfono de 10 dígitos a uno de 39, con reglas de escritura más limpias.',
+    oneLiner: 'IPv6 usa 128 bits en hexadecimal, elimina el broadcast y permite que cada dispositivo se autoconfigure al escuchar al router.',
+    videos: [
+      { src: 'modulo4-ipv6.mp4', label: 'Clase · Fundamentos de IPv6', tag: 'Principal' },
+      { src: 'videog5.mp4', label: 'Clase G5 · IPv6 en práctica', tag: 'Complemento' }
+    ],
+    sections: [
+      {
+        icon: 'globe',
+        title: 'Leer una dirección IPv6 sin miedo',
+        intro: 'Son 128 bits escritos como 8 grupos de 4 dígitos hexadecimales separados por dos puntos. Dos reglas y ya sabes leerlas.',
+        bullets: [
+          { t: 'Regla 1: quita ceros a la izquierda', d: 'de cada grupo. 0db8 se escribe db8; 0001 se escribe 1.' },
+          { t: 'Regla 2: usa :: una sola vez', d: 'para reemplazar el bloque más largo de grupos en cero. No puede repetirse en la misma dirección.' },
+          { t: 'El prefijo indica la red', d: '/64 es el tamaño estándar de una LAN; /48 identifica un sitio y /128 un único host.' },
+          { t: 'Interfaz ID', d: 'los 64 bits de la derecha identifican la interfaz dentro de la LAN. La parte de red son los 64 bits de la izquierda.' },
+          { t: 'Hexadecimal, no decimal', d: 'cada grupo va de 0000 a ffff. No hay puntos ni máscara decimal como en IPv4.' }
+        ],
+        example: {
+          from: '2001:0db8:0000:0000:0000:0000:0000:0001',
+          to: '2001:db8::1'
+        },
+        note: 'Dos formas de escribir una dirección IPv6 pueden parecer distintas y representar la misma dirección. Por eso conviene normalizarla antes de comparar.'
+      },
+      {
+        icon: 'layers',
+        title: 'Tipos de dirección que sí importan',
+        intro: 'En IPv6 no todo es “una IP”. El prefijo te dice para qué sirve cada dirección y hasta dónde puede viajar.',
+        bullets: [
+          { t: 'Global Unicast (GUA)', d: '2000::/3. Pública y enrutable en Internet, como una dirección postal.' },
+          { t: 'Link-Local', d: 'fe80::/10. Obligatoria en cada interfaz; solo vale en el enlace y se usa para NDP y como next-hop.' },
+          { t: 'Unique Local (ULA)', d: 'fc00::/7. Privada y no enrutable en Internet; cumple un papel parecido a las IPv4 privadas.' },
+          { t: 'Multicast', d: 'ff00::/8. Un paquete hacia muchos destinos. IPv6 no tiene broadcast: usa multicast.' },
+          { t: 'Anycast y loopback', d: 'anycast llega al equipo más cercano de un grupo; ::1 es el loopback local.' }
+        ],
+        table: {
+          headers: ['Prefijo', 'Para qué sirve'],
+          rows: [
+            ['2000::/3', 'Global Unicast: Internet'],
+            ['fe80::/10', 'Link-Local: solo el enlace local'],
+            ['fc00::/7', 'Unique Local: red privada'],
+            ['ff00::/8', 'Multicast: uno a muchos'],
+            ['::1/128', 'Loopback del propio equipo']
+          ]
+        },
+        note: 'Si ves una dirección que empieza por fe80, no intentes hacer ping a través de Internet: está limitada al cable o Wi-Fi donde nació.'
+      },
+      {
+        icon: 'network',
+        title: 'Cómo arranca un equipo: NDP, SLAAC y Dual Stack',
+        intro: 'En IPv6 el router anuncia la red y el equipo se construye su propia dirección. No hace falta un servidor DHCP para todo.',
+        bullets: [
+          { t: 'NDP reemplaza a ARP', d: 'Neighbor Discovery usa ICMPv6 (RS/RA, NS/NA y DAD) para descubrir vecinos y detectar direcciones duplicadas.' },
+          { t: 'SLAAC', d: 'el host escucha el Router Advertisement, toma el prefijo /64 y se forma su propia dirección. Sin DHCP.' },
+          { t: 'DHCPv6 sigue existiendo', d: 'se usa para DNS y otras opciones, o cuando la red marca las flags M/O.' },
+          { t: 'Dual Stack', d: 'el equipo ejecuta IPv4 e IPv6 a la vez y elige según el destino; el DNS devuelve A o AAAA. Es la transición más común.' },
+          { t: 'Túneles y traducción', d: '6in4 transporta IPv6 sobre IPv4; NAT64/DNS64 permite que un host solo IPv6 hable con destinos IPv4.' }
+        ],
+        note: 'Dual Stack no traduce: convive. NAT64 traduce. Son estrategias distintas y conviene no mezclarlas en la explicación.'
+      }
+    ],
+    chips: ['128 bits', 'fe80::/10 = link-local', 'SLAAC + NDP', 'Dual Stack = convivir'],
+    feynmanPrompt: 'Ejemplo: «IPv6 es como ampliar la ciudad con direcciones únicas para cada grano de arena…».',
+    quiz: [
+      {
+        question: '¿Cuál es una representación válida y equivalente de 2001:0db8:0000:0000:0000:0000:0000:0001?',
+        options: [
+          '2001:db8::1',
+          '2001:db8:::1',
+          '2001:db8::1::',
+          '2001:db8:0:0:0:0:0:1:0'
+        ],
+        answer: 0,
+        why: 'Se quitan los ceros a la izquierda y un único :: reemplaza el bloque más largo de grupos en cero. :: no puede repetirse y no se permiten tres dos puntos seguidos ni nueve grupos.'
+      },
+      {
+        question: 'Tu PC tiene la dirección fe80::a1b2 asignada. ¿Qué afirmación es correcta?',
+        options: [
+          'Es global y se enruta por Internet',
+          'Es link-local: solo vale en el enlace y se usa, por ejemplo, para NDP',
+          'Es multicast y llega a todos los equipos',
+          'Es la dirección de loopback'
+        ],
+        answer: 1,
+        why: 'fe80::/10 es link-local. Es obligatoria en cada interfaz, se usa para Neighbor Discovery y como next-hop, y los routers no la reenvían fuera del enlace. Las globales son 2000::/3, multicast ff00::/8 y loopback ::1.'
+      },
+      {
+        question: '¿Qué describe mejor Dual Stack?',
+        options: [
+          'Traducir IPv6 a IPv4 con NAT64',
+          'Ejecutar IPv4 e IPv6 a la vez en el mismo dispositivo y elegir según el destino',
+          'Tener dos routers, uno para cada protocolo',
+          'Asignar dos direcciones IPv4 a cada interfaz'
+        ],
+        answer: 1,
+        why: 'Dual Stack mantiene ambos pilas activas: el DNS devuelve A (IPv4) o AAAA (IPv6) y el host usa la familia del destino. NAT64/DNS64 es traducción para hosts solo IPv6, no dual stack.'
+      }
+    ]
+  },
+  {
+    id: 'automation',
+    n: '06',
+    title: 'Automatización de Redes y Gestión',
+    short: 'Automatización',
+    accent: '#F472B6',
+    duration: '20–25 min',
+    tagline: 'Menos comandos manuales, más control por software.',
+    intro: 'La automatización usa herramientas y lenguajes de programación para gestionar, configurar y operar redes con mínima intervención humana, aumentando eficiencia, reduciendo errores y acelerando despliegues.',
+    analogy: 'La automatización es como pasar de escribir cartas a mano a usar un procesador de texto con plantillas: el contenido es el mismo, pero se produce más rápido, con menos errores y se puede repetir mil veces. SDN es el cerebro central que decide; las APIs son los mensajeros que llevan las órdenes a cada dispositivo.',
+    oneLiner: 'SDN separa control y datos; DNA Center y las REST APIs automatizan configuración; SNMP y Syslog monitorean; la virtualización abstrae la infraestructura.',
+    videos: [
+      { src: 'video6.mp4', label: 'Clase G6 · Automatización y gestión', tag: 'Principal' }
+    ],
+    sections: [
+      {
+        icon: 'network',
+        title: 'SDN y Cisco DNA Center',
+        intro: 'SDN separa el plano de control del plano de datos y centraliza las decisiones.',
+        bullets: [
+          { t: 'SDN', d: 'arquitectura que separa el plano de control del plano de datos; un controlador centralizado configura dispositivos en tiempo real.' },
+          { t: 'Arquitecturas', d: 'centralizada (un controlador), distribuida (varios controladores) e híbrida (SDN + redes tradicionales).' },
+          { t: 'Cisco DNA Center', d: 'plataforma de automatización, monitoreo y análisis basada en políticas; aprovisionamiento automático y visibilidad en tiempo real.' },
+          { t: 'REST APIs', d: 'integran scripts personalizados para gestionar dispositivos, recolectar datos y aplicar configuraciones dinámicamente.' },
+          { t: 'Métodos HTTP', d: 'GET, POST, PUT y DELETE para interactuar con los dispositivos de red.' }
+        ],
+        note: 'SDN da visibilidad global y gestión centralizada, pero requiere planificar la migración desde redes tradicionales.'
+      },
+      {
+        icon: 'table',
+        title: 'Monitoreo: SNMP y Syslog',
+        intro: 'Monitorear es detectar antes de que el usuario se dé cuenta.',
+        bullets: [
+          { t: 'SNMP', d: 'recopila estadísticas de dispositivos: estado de interfaces, uso de CPU y memoria, tráfico y hardware.' },
+          { t: 'Syslog', d: 'registra eventos y alertas de switches, routers y firewalls; cambios de estado, accesos y fallos.' },
+          { t: 'Alertas', d: 'reglas para notificar cuando un enlace cae o la CPU supera un umbral (por ejemplo, 85 %).' },
+          { t: 'Auditoría', d: 'los registros permiten análisis forense e investigación de incidentes.' },
+          { t: 'Proactividad', d: 'identificar fallos y prever incidentes antes de que afecten al servicio.' }
+        ],
+        note: 'SNMP mide cómo está la red; Syslog cuenta qué pasó. Juntos permiten gestión proactiva.'
+      },
+      {
+        icon: 'layers',
+        title: 'Virtualización y casos prácticos',
+        intro: 'La virtualización abstrae la infraestructura física mediante software.',
+        bullets: [
+          { t: 'Hypervisores', d: 'ejecutan múltiples sistemas operativos de red en un mismo hardware físico.' },
+          { t: 'Redes definidas por software', d: 'abstraen la infraestructura física mediante controladores y máquinas virtuales.' },
+          { t: 'Ámbitos', d: 'laboratorios, centros de datos y redes corporativas que requieren flexibilidad y escalabilidad.' },
+          { t: 'Caso 1', d: 'automatizar la configuración de VLANs en 20 switches con REST APIs reduce el tiempo de 3 horas a 10 minutos.' },
+          { t: 'Caso 2', d: 'alertas SNMP/Syslog cuando un enlace cae o la CPU supera el 85 %, con respuesta proactiva del equipo.' }
+        ],
+        note: 'La automatización reduce errores humanos y libera tiempo para tareas estratégicas.'
+      }
+    ],
+    chips: ['SDN = control central', 'REST = GET/POST/PUT/DELETE', 'SNMP = métricas', 'Syslog = eventos', 'NFV = virtualización'],
+    feynmanPrompt: 'Ejemplo: «La automatización es como usar plantillas en vez de escribir a mano: mismo contenido, menos errores y mucho más rápido…».',
+    quiz: [
+      {
+        question: '¿Qué separa SDN?',
+        options: [
+          'La capa física de la capa de enlace',
+          'El plano de control del plano de datos',
+          'IPv4 de IPv6',
+          'La WAN de la LAN'
+        ],
+        answer: 1,
+        why: 'SDN (Software-Defined Networking) separa el plano de control (decisiones) del plano de datos (reenvío), permitiendo un controlador centralizado que configura la red en tiempo real.'
+      },
+      {
+        question: '¿Qué protocolo recopila métricas como estado de interfaces y uso de CPU?',
+        options: [
+          'Syslog',
+          'SNMP',
+          'DNS',
+          'DHCP'
+        ],
+        answer: 1,
+        why: 'SNMP (Simple Network Management Protocol) recopila estadísticas de dispositivos de red. Syslog registra eventos y alertas; DNS resuelve nombres y DHCP asigna direcciones.'
+      },
+      {
+        question: 'Las REST APIs permiten automatizar tareas usando...',
+        options: [
+          'Solo comandos CLI por consola',
+          'Métodos HTTP estándar como GET, POST, PUT y DELETE',
+          'Tramas Ethernet sin IP',
+          'Señales analógicas'
+        ],
+        answer: 1,
+        why: 'Las REST APIs utilizan métodos HTTP estándar (GET, POST, PUT, DELETE) para interactuar con los dispositivos, recolectar datos y aplicar configuraciones dinámicamente.'
+      }
+    ]
+  },
+  {
+    id: 'wanint',
+    n: '07',
+    title: 'Integración de Dispositivos y Protocolos WAN',
+    short: 'Integración WAN',
+    accent: '#FB923C',
+    duration: '20–25 min',
+    tagline: 'Unir sedes con troncales, túneles, Metro Ethernet y SD-WAN.',
+    intro: 'La integración WAN configura routers, switches y tecnologías de comunicación para enlazar LANs distribuidas geográficamente, garantizando interoperabilidad, redundancia, seguridad y optimización del tráfico.',
+    analogy: 'Integrar WAN es como coordinar una cadena de tiendas en distintas ciudades: los troncales son los camiones que llevan mercancía entre almacenes, GRE es el empaque que permite transportar cualquier tipo de producto, Metro Ethernet es el servicio de mensajería metropolitana y SD-WAN es el software que decide qué camión usar según el tráfico.',
+    oneLiner: 'Troncales extienden VLANs entre sedes; GRE encapsula; Metro Ethernet conecta ciudades; SD-WAN elige la mejor ruta y reduce costos frente a MPLS.',
+    videos: [
+      { src: 'video7.mp4', label: 'Clase G7 · Integración WAN', tag: 'Principal' }
+    ],
+    sections: [
+      {
+        icon: 'layers',
+        title: 'Troncales y túneles GRE',
+        intro: 'Extender la LAN entre sedes requiere troncales compatibles y túneles que encapsulen el tráfico.',
+        bullets: [
+          { t: 'Enlaces troncales', d: 'extienden VLANs y protocolos entre sitios mediante interfaces trunk con encapsulación dot1Q.' },
+          { t: 'VLAN nativa', d: 'debe coordinarse en ambos extremos para evitar inconsistencias.' },
+          { t: 'GRE', d: 'encapsula una amplia variedad de protocolos dentro de IP, uniendo redes disímiles a través de Internet.' },
+          { t: 'Enrutamiento', d: 'GRE mantiene el enrutamiento interno entre sucursales.' },
+          { t: 'Seguridad', d: 'GRE puede combinarse con IPSec para añadir cifrado.' }
+        ],
+        note: 'Los troncales y túneles GRE son la base para mantener una infraestructura de red coherente a pesar de la distancia.'
+      },
+      {
+        icon: 'network',
+        title: 'Metro Ethernet y SD-WAN',
+        intro: 'Metro Ethernet conecta sedes metropolitanas; SD-WAN moderniza la gestión y reduce costos.',
+        bullets: [
+          { t: 'Metro Ethernet', d: 'conectividad Ethernet extendida a nivel metropolitano, alta velocidad, soporte de VLANs y QoS.' },
+          { t: 'Ventaja', d: 'menor complejidad comparada con otras tecnologías WAN y escalabilidad para el crecimiento.' },
+          { t: 'SD-WAN', d: 'solución moderna con controladores centrales y políticas definidas por software.' },
+          { t: 'Selección dinámica', d: 'elige la mejor ruta según condiciones de red en tiempo real (jitter, pérdida, latencia).' },
+          { t: 'Optimización multi-enlace', d: 'aprovecha MPLS, banda ancha y LTE distribuyendo el tráfico por prioridades.' }
+        ],
+        note: 'SD-WAN ofrece mayor flexibilidad, reducción de costos y control autónomo frente a WAN tradicionales.'
+      },
+      {
+        icon: 'table',
+        title: 'MPLS vs SD-WAN',
+        intro: 'MPLS ofrece rendimiento consistente; SD-WAN ofrece flexibilidad y control a menor costo.',
+        bullets: [
+          { t: 'MPLS', d: 'latencia baja y predecible, QoS garantizada por el proveedor, control principalmente del proveedor.' },
+          { t: 'SD-WAN', d: 'latencia variable según enlace, QoS gestionada por políticas, control autónomo de la empresa.' },
+          { t: 'Flexibilidad', d: 'MPLS limitada; SD-WAN alta.' },
+          { t: 'Costo', d: 'MPLS elevado; SD-WAN reducido.' },
+          { t: 'Seguridad', d: 'MPLS aísla tráfico; SD-WAN cifra integralmente.' }
+        ],
+        table: {
+          headers: ['Característica', 'MPLS', 'SD-WAN'],
+          rows: [
+            ['Latencia', 'Baja y predecible', 'Variable según enlace'],
+            ['QoS', 'Garantizada por proveedor', 'Gestionada por políticas'],
+            ['Control', 'Del proveedor', 'Autónomo (empresa)'],
+            ['Flexibilidad', 'Limitada', 'Alta'],
+            ['Costo', 'Elevado', 'Reducido'],
+            ['Seguridad', 'Aislamiento de tráfico', 'Cifrado integral']
+          ]
+        },
+        note: 'Muchas organizaciones optan por soluciones híbridas que aprovechan las fortalezas de MPLS y SD-WAN según sus necesidades.'
+      }
+    ],
+    chips: ['Metro Ethernet = metrópoli', 'SD-WAN = control autónomo', 'GRE + IPSec = seguridad', 'MPLS = QoS garantizada', 'Híbrido = mejor de ambos'],
+    feynmanPrompt: 'Ejemplo: «Integrar WAN es como coordinar tiendas en varias ciudades: troncales son camiones, GRE es el empaque y SD-WAN decide qué ruta usar…».',
+    quiz: [
+      {
+        question: '¿En qué se diferencia SD-WAN de MPLS?',
+        options: [
+          'SD-WAN solo funciona con fibra óptica',
+          'SD-WAN ofrece control autónomo y mayor flexibilidad a menor costo',
+          'MPLS cifra el tráfico de extremo a extremo',
+          'MPLS es más barato y flexible'
+        ],
+        answer: 1,
+        why: 'SD-WAN proporciona control autónomo a la empresa, alta flexibilidad y costos reducidos, mientras MPLS ofrece latencia predecible y QoS garantizada por el proveedor.'
+      },
+      {
+        question: '¿Qué ofrece Metro Ethernet?',
+        options: [
+          'Conectividad Ethernet extendida a nivel metropolitano',
+          'Cifrado de extremo a extremo por defecto',
+          'Asignación de direcciones IPv6',
+          'Balanceo de carga entre VLANs'
+        ],
+        answer: 0,
+        why: 'Metro Ethernet proporciona conectividad Ethernet de alta velocidad a nivel metropolitano, con soporte de VLANs y QoS, aprovechando la infraestructura del proveedor.'
+      },
+      {
+        question: 'GRE sobre IPSec combina...',
+        options: [
+          'La simplicidad de HDLC con la autenticación de PPP',
+          'La flexibilidad de GRE para encapsular protocolos con la seguridad de IPSec',
+          'MPLS con SD-WAN',
+          'IPv4 con IPv6 automáticamente'
+        ],
+        answer: 1,
+        why: 'GRE encapsula múltiples protocolos pero no cifra; IPSec proporciona autenticación y cifrado. Juntos combinan flexibilidad y seguridad.'
+      }
+    ]
+  },
+  {
+    id: 'vpn',
+    n: '08',
+    title: 'Integración de Redes y VPN',
+    short: 'VPN',
+    accent: '#2DD4BF',
+    duration: '20–25 min',
+    tagline: 'Túneles cifrados para conectar sedes y usuarios remotos de forma segura.',
+    intro: 'Las VPN crean túneles cifrados a través de redes públicas como Internet, simulando una red privada. Integran LAN y WAN con encapsulamiento, autenticación y cifrado para garantizar privacidad y disponibilidad.',
+    analogy: 'Una VPN es como un túnel privado bajo una autopista pública: aunque todos circulan por la misma carretera, tu tráfico va dentro de un tubo cifrado que nadie puede ver. GRE es el tubo que permite pasar cualquier tipo de vehículo; IPSec es la cerradura que protege el tubo.',
+    oneLiner: 'IPSec cifra y autentica; GRE encapsula; sitio a sitio conecta redes; acceso remoto conecta usuarios; NAT64/DNS64 ayudan en entornos mixtos IPv4/IPv6.',
+    videos: [
+      { src: 'video8.mp4', label: 'Clase G8 · Integración y VPN', tag: 'Principal' }
+    ],
+    sections: [
+      {
+        icon: 'shield',
+        title: 'Tipos de VPN',
+        intro: 'La elección depende de los requisitos de conectividad, seguridad y presupuesto.',
+        bullets: [
+          { t: 'VPN de sitio a sitio', d: 'conecta dos redes remotas de forma permanente mediante túneles seguros; se configura en los routers perimetrales.' },
+          { t: 'VPN de acceso remoto', d: 'permite a empleados o usuarios móviles acceder a recursos internos desde cualquier ubicación, con software cliente.' },
+          { t: 'IKE', d: 'Internet Key Exchange negocia los parámetros de seguridad del túnel.' },
+          { t: 'Fase 1', d: 'creación del túnel IKE (ISAKMP).' },
+          { t: 'Fase 2', d: 'establecimiento del túnel IPSec.' }
+        ],
+        note: 'Sitio a sitio es ideal para oficinas permanentes; acceso remoto es ideal para teletrabajo y movilidad.'
+      },
+      {
+        icon: 'layers',
+        title: 'GRE e IPSec',
+        intro: 'GRE encapsula múltiples protocolos; IPSec cifra y autentica. Juntos son la combinación estándar.',
+        bullets: [
+          { t: 'GRE', d: 'encapsula múltiples protocolos dentro de IP; permite transportar multicast y protocolos no IP; no cifra por sí solo.' },
+          { t: 'IPSec', d: 'proporciona autenticación y cifrado mediante ESP (Encapsulating Security Payload) y AH (Authentication Header).' },
+          { t: 'Modos', d: 'IPSec puede operar en modo transporte (solo carga útil) o túnel (paquete completo).' },
+          { t: 'GRE sobre IPSec', d: 'combina la flexibilidad de GRE para encapsular protocolos con la seguridad robusta de IPSec.' },
+          { t: 'Estándar', d: 'IPSec es el estándar de la industria para comunicaciones seguras.' }
+        ],
+        note: 'GRE solo no protege el tráfico en redes públicas; siempre combínalo con IPSec cuando la confidencialidad importe.'
+      },
+      {
+        icon: 'globe',
+        title: 'IPv4/IPv6 en entornos mixtos',
+        intro: 'La transición a IPv6 es gradual; las VPN deben soportar ambos protocolos.',
+        bullets: [
+          { t: 'Dual Stack', d: 'implementación simultánea de IPv4 e IPv6 en los dispositivos de red.' },
+          { t: 'Túneles compatibles', d: 'encapsulan tráfico IPv6 sobre redes IPv4 (o viceversa) para conectar islas IPv6.' },
+          { t: 'NAT64', d: 'traduce direcciones IPv6 a IPv4 y viceversa.' },
+          { t: 'DNS64', d: 'sintetiza registros AAAA a partir de registros A para facilitar la resolución en entornos mixtos.' },
+          { t: 'Migración', d: 'planificada y gradual; los entornos mixtos serán comunes durante muchos años.' }
+        ],
+        note: 'Dual Stack convive; NAT64 traduce. Son estrategias distintas y conviene no mezclarlas en la explicación.'
+      }
+    ],
+    chips: ['Sitio a sitio = permanente', 'Acceso remoto = usuarios', 'GRE no cifra', 'IPSec cifra', 'NAT64/DNS64 = traducción'],
+    feynmanPrompt: 'Ejemplo: «Una VPN es como un túnel privado bajo una autopista pública: tu tráfico va cifrado dentro de un tubo que nadie puede ver…».',
+    quiz: [
+      {
+        question: '¿Qué proporciona IPSec?',
+        options: [
+          'Encapsulación de múltiples protocolos sin cifrado',
+          'Autenticación y cifrado mediante ESP y AH',
+          'Asignación dinámica de direcciones IP',
+          'Resolución de nombres de dominio'
+        ],
+        answer: 1,
+        why: 'IPSec proporciona autenticación y cifrado robusto mediante ESP (Encapsulating Security Payload) y AH (Authentication Header), garantizando confidencialidad e integridad.'
+      },
+      {
+        question: 'GRE por sí solo...',
+        options: [
+          'Cifra y autentica el tráfico',
+          'Encapsula múltiples protocolos pero no cifra',
+          'Asigna direcciones IPv6 automáticamente',
+          'Reemplaza a IPSec en redes públicas'
+        ],
+        answer: 1,
+        why: 'GRE encapsula una amplia variedad de protocolos dentro de IP, permitiendo transportar multicast y protocolos no IP, pero no proporciona cifrado. Se combina con IPSec para seguridad.'
+      },
+      {
+        question: '¿Para qué sirven NAT64 y DNS64?',
+        options: [
+          'Para cifrar túneles VPN',
+          'Para permitir comunicación entre redes IPv6 e IPv4',
+          'Para asignar direcciones MAC',
+          'Para evitar bucles en la capa 2'
+        ],
+        answer: 1,
+        why: 'NAT64 traduce direcciones entre IPv6 e IPv4, y DNS64 sintetiza registros AAAA a partir de registros A, facilitando la interoperabilidad en entornos mixtos.'
+      }
+    ]
+  }
+];
+
 
     const TOTAL_STEPS = MODULES.reduce((total, module) => total + (module.videoOptional ? 2 : 3), 0);
 
