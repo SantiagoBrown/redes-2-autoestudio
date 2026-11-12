@@ -1,0 +1,10 @@
+# Material pesado del curso: permanece solo en local
+*.mp4
+*.pdf
+
+# Respaldo del boceto anterior
+boceto-original/
+
+# Archivos temporales de revisión
+qa-*.html
+*.tmp

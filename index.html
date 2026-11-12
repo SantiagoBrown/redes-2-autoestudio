@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#05080C" />
+<title>Redes 2 · Ruta de autoestudio</title>
+<meta name="description" content="Ruta guiada de autoestudio para Redes 2: conmutación de capa 2, QoS e IPv6 con microlearning, técnica Feynman y active recall." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: {
+            950: '#05080C',
+            900: '#080D13',
+            850: '#0A1118',
+            800: '#0D161F',
+            700: '#14212C',
+            600: '#1B2A37'
+          }
+        },
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
+        },
+        boxShadow: {
+          soft: '0 30px 80px -40px rgba(0,0,0,.9)',
+          glow: '0 0 40px -12px rgba(56,189,248,.35)'
+        },
+        keyframes: {
+          rise: {
+            '0%': { opacity: '0', transform: 'translateY(10px)' },
+            '100%': { opacity: '1', transform: 'translateY(0)' }
+          },
+          fade: {
+            '0%': { opacity: '0' },
+            '100%': { opacity: '1' }
+          }
+        },
+        animation: {
+          rise: 'rise .45s cubic-bezier(.22,1,.36,1) both',
+          fade: 'fade .25s ease-out both'
+        }
+      }
+    }
+  };
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { background-color: #05080C; }
+
+  .boot {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    gap: 14px;
+    color: #64748b;
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 14px;
+    text-align: center;
+    padding: 24px;
+  }
+  .boot strong { color: #e2e8f0; font-size: 16px; display: block; margin-bottom: 4px; }
+  .boot-dot {
+    width: 42px; height: 42px; margin: 0 auto 14px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(56,189,248,.2), rgba(52,211,153,.1));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    display: grid; place-items: center; color: #7dd3fc; font-size: 18px;
+    animation: bootPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes bootPulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+
+  ::selection { background: rgba(56,189,248,.28); color: #fff; }
+  * { scrollbar-width: thin; scrollbar-color: #243442 transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #1a2836;
+    border-radius: 999px;
+    border: 3px solid #05080C;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #263a4b; }
+
+  textarea { field-sizing: content; }
+  video:focus { outline: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body class="bg-ink-950 font-sans text-slate-200 antialiased">
+  <div id="root">
+    <div class="boot">
+      <div>
+        <div class="boot-dot">◈</div>
+        <strong>Redes 2</strong>
+        Cargando tu ruta de estudio…
+      </div>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="boot"><div><strong>Necesitas JavaScript</strong>Esta ruta de estudio es interactiva. Actívalo y vuelve a cargar la página.</div></div>
+  </noscript>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    /* ------------------------------------------------------------------ */
+    /*  Configuración                                                      */
+    /* ------------------------------------------------------------------ */
+
+    const STORAGE_KEY = 'redes2:progreso:v2';
+    const MODULE_KEY = 'redes2:modulo-actual:v1';
+    const PASS_SCORE = 2;
+
+    const emptyProgress = () => ({ theory: {}, video: {}, quiz: {}, feynman: {} });
+
+    function loadProgress() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return emptyProgress();
+        const saved = JSON.parse(raw);
+        return {
+          theory: saved && typeof saved.theory === 'object' && saved.theory ? saved.theory : {},
+          video: saved && typeof saved.video === 'object' && saved.video ? saved.video : {},
+          quiz: saved && typeof saved.quiz === 'object' && saved.quiz ? saved.quiz : {},
+          feynman: saved && typeof saved.feynman === 'object' && saved.feynman ? saved.feynman : {}
+        };
+      } catch (error) {
+        return emptyProgress();
+      }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Contenido del curso                                                */
+    /* ------------------------------------------------------------------ */
+
+    const MODULES = [
+      {
+        id: 'l2',
+        n: '01',
+        title: 'Conmutación de Capa 2',
+        short: 'Capa 2',
+        accent: '#38BDF8',
+        duration: '20–25 min',
+        tagline: 'Switches que aprenden, VLANs que separan y STP que evita bucles.',
+        intro: 'El día a día de una LAN: cómo el switch decide por dónde enviar cada trama, cómo las VLAN crean redes separadas sobre el mismo equipo y cómo STP mantiene la redundancia sin tormentas de broadcast.',
+        analogy: 'Un switch es el portero de un edificio de oficinas. Al principio no conoce a nadie, pero anota en su libreta qué nombre (dirección MAC) vive en cada oficina (puerto). Cuando llega una carta, la entrega directo a esa oficina en lugar de gritar por todos los pasillos. Una VLAN es dividir el edificio en pisos: todos usan el mismo ascensor, pero un piso no ve lo que pasa en otro. Y STP es el portero que cierra una escalera de emergencia redundante para que nadie corra en círculos.',
+        oneLiner: 'El switch aprende y reenvía; la VLAN separa; el trunk etiqueta; STP bloquea el camino extra para que la red no entre en bucle.',
+        videos: [
+          { src: 'videog1.mp4', label: 'Clase G1 · Switching avanzado', tag: 'Principal' },
+          { src: 'video2.mp4', label: 'Clase G2 · Spanning Tree', tag: 'Complemento' }
+        ],
+        sections: [
+          {
+            icon: 'table',
+            title: 'La tabla MAC: aprender antes de decidir',
+            intro: 'Un switch no nace sabiendo dónde está cada equipo. Lo aprende mirando el tráfico que pasa por sus puertos.',
+            bullets: [
+              { t: 'Aprende la MAC de origen', d: 'cuando llega una trama, asocia esa MAC al puerto por el que entró.' },
+              { t: 'Si conoce la MAC de destino', d: 'reenvía la trama solo por ese puerto (forwarding).' },
+              { t: 'Si no la conoce', d: 'la inunda por todos los puertos de esa VLAN, menos el de origen (unknown unicast flooding).' },
+              { t: 'Si el destino está en el mismo puerto', d: 'la descarta (filtering).' },
+              { t: 'Las entradas envejecen', d: 'tras unos 5 minutos sin tráfico, para adaptarse a equipos que se mueven.' }
+            ],
+            note: 'Un hub repite a todos; un switch decide. Esa diferencia es la base de una LAN moderna.'
+          },
+          {
+            icon: 'layers',
+            title: 'VLANs: varios mundos dentro del mismo switch',
+            intro: 'Una VLAN es un dominio de broadcast lógico. Separa tráfico sin comprar un switch por cada departamento.',
+            bullets: [
+              { t: 'Misma VLAN = mismo dominio de broadcast', d: 'dos equipos en VLAN distintas no se ven sin un router o un switch de capa 3.' },
+              { t: 'Puerto access', d: 'pertenece a una sola VLAN y entrega las tramas sin etiqueta al dispositivo final.' },
+              { t: 'Enlace trunk', d: 'transporta varias VLANs entre switches o hacia un router; usa etiquetas 802.1Q.' },
+              { t: 'Etiqueta 802.1Q', d: 'añade 4 bytes a la trama; el VLAN ID ocupa 12 bits (hasta 4094 VLANs usables).' },
+              { t: 'VLAN nativa', d: 'la única que cruza el trunk sin etiqueta. Debe coincidir en ambos extremos.' }
+            ],
+            table: {
+              headers: ['Puerto access', 'Enlace trunk'],
+              rows: [
+                ['Conecta un dispositivo final', 'Conecta switches, routers o servidores con varias VLANs'],
+                ['Pertenece a una sola VLAN', 'Transporta muchas VLANs a la vez'],
+                ['Tramas sin etiqueta', 'Tramas con etiqueta 802.1Q'],
+                ['Configuración simple', 'Requiere acordar VLAN nativa y VLAN permitidas']
+              ]
+            },
+            note: 'Si una VLAN no está permitida en el trunk, no cruza. Ese fallo no se arregla cambiando direcciones IP.'
+          },
+          {
+            icon: 'shield',
+            title: 'STP: redundancia sin bucles',
+            intro: 'Los cables extra salvan la red si algo falla, pero también crean caminos circulares. STP elige un árbol sin bucles.',
+            bullets: [
+              { t: 'El problema', d: 'un broadcast puede girar para siempre (broadcast storm) y la tabla MAC oscila (MAC flapping).' },
+              { t: 'Root Bridge', d: 'gana el switch con el menor Bridge ID (prioridad + MAC). La prioridad por defecto es 32768.' },
+              { t: 'Puerto raíz', d: 'en cada switch, el puerto con el menor costo hacia el Root Bridge.' },
+              { t: 'Roles de puerto', d: 'Root (hacia el root), Designado (reenvía) y Alternado o Bloqueado (respaldo listo).' },
+              { t: 'Convergencia', d: 'si el camino activo falla, STP activa el respaldo. RSTP (802.1w) converge en segundos.' }
+            ],
+            note: 'STP no elimina el cable redundante: lo deja en espera para usarlo cuando haga falta.'
+          }
+        ],
+        chips: ['Tabla MAC = memoria', 'VLAN = separación lógica', 'Trunk = 802.1Q', 'STP = un solo camino activo'],
+        feynmanPrompt: 'Ejemplo: «Un switch es como un portero que aprende en qué oficina vive cada persona…».',
+        quiz: [
+          {
+            question: 'El switch recibe una trama hacia una MAC que no está en su tabla. ¿Qué hace?',
+            options: [
+              'La descarta y avisa al emisor',
+              'La envía solo por el puerto del router',
+              'La inunda por todos los puertos de esa VLAN, excepto el de origen',
+              'La guarda en cola hasta aprender la MAC de destino'
+            ],
+            answer: 2,
+            why: 'Es unknown unicast flooding: el switch inunda dentro de la VLAN para no perder la trama. Cuando el destino responda, aprenderá su MAC y los siguientes envíos serán unicast.'
+          },
+          {
+            question: 'Un trunk transporta las VLAN 10 y 20 entre dos switches. ¿Qué permite saber al switch remoto a qué VLAN pertenece cada trama?',
+            options: [
+              'La dirección MAC de destino',
+              'La etiqueta 802.1Q insertada en la trama',
+              'El TTL del paquete IP',
+              'El número del puerto físico'
+            ],
+            answer: 1,
+            why: '802.1Q añade una etiqueta de 4 bytes con un VLAN ID de 12 bits. El puerto access la quita antes de entregar la trama al equipo final; la VLAN nativa es la única que viaja sin etiqueta en el trunk.'
+          },
+          {
+            question: '¿Quién gana la elección de Root Bridge en STP?',
+            options: [
+              'El switch con la prioridad más alta',
+              'El switch con el menor Bridge ID (prioridad + MAC)',
+              'El switch con más puertos activos',
+              'El switch que se encendió primero'
+            ],
+            answer: 1,
+            why: 'Gana el menor Bridge ID. La prioridad por defecto es 32768 y, si hay empate, decide la MAC más baja. Todos los demás switches construyen el árbol sin bucles apuntando hacia ese root.'
+          }
+        ]
+      },
+      {
+        id: 'qos',
+        n: '02',
+        title: 'Calidad de Servicio (QoS)',
+        short: 'QoS',
+        accent: '#A78BFA',
+        duration: '20–25 min',
+        tagline: 'No hay más ancho de banda: hay mejores decisiones bajo congestión.',
+        intro: 'Cuando la red se llena, alguien tiene que esperar. QoS decide a quién afecta esa espera usando clasificación, marcado DSCP, colas y límites de tráfico.',
+        analogy: 'QoS es el triaje de urgencias de un hospital. No atiende al que llegó primero, sino al que no puede esperar: una videollamada (dolor en el pecho) pasa antes que una descarga (un resfriado). El hospital no crea más médicos ni más camas; decide mejor a quién atiende primero y a quién hace esperar.',
+        oneLiner: 'QoS no fabrica ancho de banda: decide qué tráfico sufre cuando la red se llena y protege al que no tolera retraso.',
+        videoOptional: true,
+        videos: [
+          { src: 'video4-qos.mp4', label: 'Clase de QoS', tag: 'Pendiente' }
+        ],
+        sections: [
+          {
+            icon: 'zap',
+            title: 'Los tres enemigos: retardo, jitter y pérdida',
+            intro: 'El ancho de banda es solo una parte del problema. Una llamada puede sonar mal incluso con velocidad de sobra.',
+            bullets: [
+              { t: 'Retardo (latencia)', d: 'tiempo que tarda un paquete en llegar. La voz interactiva tolera aproximadamente 150 ms de extremo a extremo.' },
+              { t: 'Jitter', d: 'variación del retardo entre paquetes consecutivos. Aunque el promedio sea bueno, la voz se entrecorta.' },
+              { t: 'Pérdida', d: 'paquetes descartados por congestión. La voz tolera alrededor de un 1 %; una descarga puede reintentar.' },
+              { t: 'Ancho de banda', d: 'capacidad del enlace. Sin QoS, la descarga más agresiva puede ocupar casi toda la cola.' }
+            ],
+            note: 'Velocidad no es lo mismo que calidad. Un enlace rápido con jitter alto arruina una videollamada.'
+          },
+          {
+            icon: 'target',
+            title: 'La cadena QoS: clasificar, marcar y encolar',
+            intro: 'QoS es una tubería de decisiones. Si el paquete no se identifica bien al inicio, el resto del camino no puede ayudarlo.',
+            bullets: [
+              { t: 'Clasificar', d: 'reconocer el tráfico por interfaz, ACL, puerto o aplicación (por ejemplo, NBAR).' },
+              { t: 'Marcar', d: 'escribir la prioridad en el paquete. En IP se usa DSCP: 6 bits del campo DS (ToS en IPv4, Traffic Class en IPv6).' },
+              { t: 'Capa 2', d: 'Ethernet también puede marcar con CoS 802.1p: 3 bits dentro de la etiqueta 802.1Q.' },
+              { t: 'Encolar y planificar', d: 'PQ da prioridad estricta, WFQ reparte por pesos y LLQ reserva una cola prioritaria con límite para voz.' },
+              { t: 'Gestionar la congestión', d: 'WRED empieza a descartar antes de que la cola esté llena, para evitar el tail drop masivo.' }
+            ],
+            table: {
+              headers: ['Marcado DSCP', 'Valor', 'Uso típico'],
+              rows: [
+                ['EF (Expedited Forwarding)', '46', 'Voz interactiva: mínima latencia, jitter y pérdida'],
+                ['AF41', '34', 'Videoconferencia y video en tiempo real'],
+                ['AF31', '26', 'Señalización y streaming'],
+                ['CS1', '8', 'Backups y tráfico “scavenger”'],
+                ['BE / CS0', '0', 'Mejor esfuerzo: el valor por defecto']
+              ]
+            },
+            note: 'Marcar sin confiar es peligroso: un usuario podría etiquetar sus descargas como voz. Por eso se define un límite de confianza (trust boundary) en el acceso.'
+          },
+          {
+            icon: 'shield',
+            title: 'Policing, shaping y los modelos de QoS',
+            intro: 'Limitar el tráfico no es lo mismo que ordenarlo. Y no todos los modelos de QoS escalan igual.',
+            bullets: [
+              { t: 'Policing', d: 'mide el ritmo y descarta o remarca el exceso de inmediato. No guarda nada: es un torniquete.' },
+              { t: 'Shaping', d: 'retiene el exceso en un buffer y lo envía suavizado. Añade retardo, pero reduce pérdidas.' },
+              { t: 'Best Effort', d: 'todos los paquetes reciben el mismo trato. Es lo que ocurre si no configuras QoS.' },
+              { t: 'IntServ', d: 'reserva recursos por flujo con RSVP. Da garantías fuertes, pero no escala bien en redes grandes.' },
+              { t: 'DiffServ', d: 'agrupa el tráfico en clases marcadas con DSCP y da un tratamiento por salto. Es el modelo dominante.' }
+            ],
+            note: 'Regla mental: el policer corta al que se pasa; el shaper lo hace esperar. Si no quieres pérdidas, shapea; si quieres castigar el exceso, policea.'
+          }
+        ],
+        chips: ['Retardo + jitter + pérdida', 'DSCP = 6 bits', 'EF 46 = voz', 'Policing descarta · Shaping espera'],
+        feynmanPrompt: 'Ejemplo: «QoS es como el triaje de un hospital: primero atiende lo urgente, aunque llegue después…».',
+        quiz: [
+          {
+            question: '¿Dónde vive el valor DSCP que QoS usa para marcar la prioridad?',
+            options: [
+              'En la cabecera Ethernet, dentro de la dirección MAC',
+              'En la cabecera IP, en los 6 bits del campo DS',
+              'En el puerto TCP de origen',
+              'Dentro del payload de la aplicación'
+            ],
+            answer: 1,
+            why: 'DSCP ocupa 6 bits del campo DS (llamado ToS en IPv4 y Traffic Class en IPv6). El marcado CoS de Ethernet es distinto: usa 3 bits en la etiqueta 802.1Q.'
+          },
+          {
+            question: 'Necesitas priorizar voz con baja latencia, jitter y pérdida. ¿Qué marcado es el estándar?',
+            options: [
+              'AF41 (34)',
+              'EF (46)',
+              'CS1 (8)',
+              'BE (0)'
+            ],
+            answer: 1,
+            why: 'EF (Expedited Forwarding, DSCP 46) es el PHB pensado para voz interactiva. AF41 se usa para video, CS1 para tráfico de relleno y BE es el mejor esfuerzo por defecto.'
+          },
+          {
+            question: 'Un proveedor te contrata 100 Mbps y descarta de inmediato todo lo que excede ese ritmo. ¿Qué mecanismo aplica?',
+            options: [
+              'Shaping',
+              'Policing',
+              'Queuing',
+              'Fragmentación'
+            ],
+            answer: 1,
+            why: 'Policing mide el ritmo y descarta o remarca el exceso al instante, sin buffer. Shaping también limita, pero retiene y suaviza el envío; añade retardo en lugar de pérdidas.'
+          }
+        ]
+      },
+      {
+        id: 'ipv6',
+        n: '03',
+        title: 'IPv6',
+        short: 'IPv6',
+        accent: '#34D399',
+        duration: '20–25 min',
+        tagline: '128 bits, direcciones link-local y una red que se configura sola.',
+        intro: 'IPv6 no es “IPv4 con más números”: cambia el formato de las direcciones, elimina el broadcast y usa NDP y SLAAC para que los equipos encuentren su camino.',
+        analogy: 'IPv4 es una ciudad con unos 4 mil millones de direcciones: se quedó sin números. IPv6 no es solo añadir dígitos; es un sistema nuevo con 340 sextillones de direcciones, suficientes para dar una a cada grano de arena del planeta. Es como pasar de un número de teléfono de 10 dígitos a uno de 39, con reglas de escritura más limpias.',
+        oneLiner: 'IPv6 usa 128 bits en hexadecimal, elimina el broadcast y permite que cada dispositivo se autoconfigure al escuchar al router.',
+        videos: [
+          { src: 'modulo4-ipv6.mp4', label: 'Clase · Fundamentos de IPv6', tag: 'Principal' },
+          { src: 'videog5.mp4', label: 'Clase G5 · IPv6 en práctica', tag: 'Complemento' }
+        ],
+        sections: [
+          {
+            icon: 'globe',
+            title: 'Leer una dirección IPv6 sin miedo',
+            intro: 'Son 128 bits escritos como 8 grupos de 4 dígitos hexadecimales separados por dos puntos. Dos reglas y ya sabes leerlas.',
+            bullets: [
+              { t: 'Regla 1: quita ceros a la izquierda', d: 'de cada grupo. 0db8 se escribe db8; 0001 se escribe 1.' },
+              { t: 'Regla 2: usa :: una sola vez', d: 'para reemplazar el bloque más largo de grupos en cero. No puede repetirse en la misma dirección.' },
+              { t: 'El prefijo indica la red', d: '/64 es el tamaño estándar de una LAN; /48 identifica un sitio y /128 un único host.' },
+              { t: 'Interfaz ID', d: 'los 64 bits de la derecha identifican la interfaz dentro de la LAN. La parte de red son los 64 bits de la izquierda.' },
+              { t: 'Hexadecimal, no decimal', d: 'cada grupo va de 0000 a ffff. No hay puntos ni máscara decimal como en IPv4.' }
+            ],
+            example: {
+              from: '2001:0db8:0000:0000:0000:0000:0000:0001',
+              to: '2001:db8::1'
+            },
+            note: 'Dos formas de escribir una dirección IPv6 pueden parecer distintas y representar la misma dirección. Por eso conviene normalizarla antes de comparar.'
+          },
+          {
+            icon: 'layers',
+            title: 'Tipos de dirección que sí importan',
+            intro: 'En IPv6 no todo es “una IP”. El prefijo te dice para qué sirve cada dirección y hasta dónde puede viajar.',
+            bullets: [
+              { t: 'Global Unicast (GUA)', d: '2000::/3. Pública y enrutable en Internet, como una dirección postal.' },
+              { t: 'Link-Local', d: 'fe80::/10. Obligatoria en cada interfaz; solo vale en el enlace y se usa para NDP y como next-hop.' },
+              { t: 'Unique Local (ULA)', d: 'fc00::/7. Privada y no enrutable en Internet; cumple un papel parecido a las IPv4 privadas.' },
+              { t: 'Multicast', d: 'ff00::/8. Un paquete hacia muchos destinos. IPv6 no tiene broadcast: usa multicast.' },
+              { t: 'Anycast y loopback', d: 'anycast llega al equipo más cercano de un grupo; ::1 es el loopback local.' }
+            ],
+            table: {
+              headers: ['Prefijo', 'Para qué sirve'],
+              rows: [
+                ['2000::/3', 'Global Unicast: Internet'],
+                ['fe80::/10', 'Link-Local: solo el enlace local'],
+                ['fc00::/7', 'Unique Local: red privada'],
+                ['ff00::/8', 'Multicast: uno a muchos'],
+                ['::1/128', 'Loopback del propio equipo']
+              ]
+            },
+            note: 'Si ves una dirección que empieza por fe80, no intentes hacer ping a través de Internet: está limitada al cable o Wi-Fi donde nació.'
+          },
+          {
+            icon: 'network',
+            title: 'Cómo arranca un equipo: NDP, SLAAC y Dual Stack',
+            intro: 'En IPv6 el router anuncia la red y el equipo se construye su propia dirección. No hace falta un servidor DHCP para todo.',
+            bullets: [
+              { t: 'NDP reemplaza a ARP', d: 'Neighbor Discovery usa ICMPv6 (RS/RA, NS/NA y DAD) para descubrir vecinos y detectar direcciones duplicadas.' },
+              { t: 'SLAAC', d: 'el host escucha el Router Advertisement, toma el prefijo /64 y se forma su propia dirección. Sin DHCP.' },
+              { t: 'DHCPv6 sigue existiendo', d: 'se usa para DNS y otras opciones, o cuando la red marca las flags M/O.' },
+              { t: 'Dual Stack', d: 'el equipo ejecuta IPv4 e IPv6 a la vez y elige según el destino; el DNS devuelve A o AAAA. Es la transición más común.' },
+              { t: 'Túneles y traducción', d: '6in4 transporta IPv6 sobre IPv4; NAT64/DNS64 permite que un host solo IPv6 hable con destinos IPv4.' }
+            ],
+            note: 'Dual Stack no traduce: convive. NAT64 traduce. Son estrategias distintas y conviene no mezclarlas en la explicación.'
+          }
+        ],
+        chips: ['128 bits', 'fe80::/10 = link-local', 'SLAAC + NDP', 'Dual Stack = convivir'],
+        feynmanPrompt: 'Ejemplo: «IPv6 es como ampliar la ciudad con direcciones únicas para cada grano de arena…».',
+        quiz: [
+          {
+            question: '¿Cuál es una representación válida y equivalente de 2001:0db8:0000:0000:0000:0000:0000:0001?',
+            options: [
+              '2001:db8::1',
+              '2001:db8:::1',
+              '2001:db8::1::',
+              '2001:db8:0:0:0:0:0:1:0'
+            ],
+            answer: 0,
+            why: 'Se quitan los ceros a la izquierda y un único :: reemplaza el bloque más largo de grupos en cero. :: no puede repetirse y no se permiten tres dos puntos seguidos ni nueve grupos.'
+          },
+          {
+            question: 'Tu PC tiene la dirección fe80::a1b2 asignada. ¿Qué afirmación es correcta?',
+            options: [
+              'Es global y se enruta por Internet',
+              'Es link-local: solo vale en el enlace y se usa, por ejemplo, para NDP',
+              'Es multicast y llega a todos los equipos',
+              'Es la dirección de loopback'
+            ],
+            answer: 1,
+            why: 'fe80::/10 es link-local. Es obligatoria en cada interfaz, se usa para Neighbor Discovery y como next-hop, y los routers no la reenvían fuera del enlace. Las globales son 2000::/3, multicast ff00::/8 y loopback ::1.'
+          },
+          {
+            question: '¿Qué describe mejor Dual Stack?',
+            options: [
+              'Traducir IPv6 a IPv4 con NAT64',
+              'Ejecutar IPv4 e IPv6 a la vez en el mismo dispositivo y elegir según el destino',
+              'Tener dos routers, uno para cada protocolo',
+              'Asignar dos direcciones IPv4 a cada interfaz'
+            ],
+            answer: 1,
+            why: 'Dual Stack mantiene ambos pilas activas: el DNS devuelve A (IPv4) o AAAA (IPv6) y el host usa la familia del destino. NAT64/DNS64 es traducción para hosts solo IPv6, no dual stack.'
+          }
+        ]
+      }
+    ];
+
+    const TOTAL_STEPS = MODULES.reduce((total, module) => total + (module.videoOptional ? 2 : 3), 0);
+
+    /* ------------------------------------------------------------------ */
+    /*  Iconos                                                             */
+    /* ------------------------------------------------------------------ */
+
+    const ICONS = {
+      menu: <><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>,
+      x: <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
+      check: <path d="m20 6-11 11-5-5" />,
+      arrowRight: <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>,
+      arrowLeft: <><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></>,
+      chevronRight: <path d="m9 18 6-6-6-6" />,
+      clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+      book: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></>,
+      layers: <><path d="m12 2 9 5-9 5-9-5 9-5z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></>,
+      target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" /></>,
+      video: <><rect x="2" y="6" width="14" height="12" rx="2" /><path d="m22 8-6 4 6 4V8z" /></>,
+      sparkles: <><path d="m12 3 1.7 4.6L18 9.3l-4.3 1.7L12 15.6l-1.7-4.6L6 9.3l4.3-1.7L12 3z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" /></>,
+      lightbulb: <><path d="M9 18h6" /><path d="M10 22h4" /><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" /></>,
+      alert: <><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></>,
+      rotate: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></>,
+      network: <><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 13.5 6.8 4" /><path d="m15.4 6.5-6.8 4" /></>,
+      table: <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /></>,
+      shield: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></>,
+      globe: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a15 15 0 0 1 0 18" /><path d="M12 3a15 15 0 0 0 0 18" /></>,
+      zap: <path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z" />,
+      play: <path d="M8 5v14l11-7z" />,
+      route: <><circle cx="6" cy="19" r="3" /><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" /><circle cx="18" cy="5" r="3" /></>
+    };
+
+    function Icon({ name, className = 'h-4 w-4' }) {
+      return (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+          aria-hidden="true"
+        >
+          {ICONS[name] || ICONS.sparkles}
+        </svg>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Utilidades visuales                                                */
+    /* ------------------------------------------------------------------ */
+
+    function alpha(hex, amount) {
+      return hex + amount;
+    }
+
+    function ProgressRing({ percent, size = 64, stroke = 5, color = '#38BDF8' }) {
+      const radius = (size - stroke) / 2;
+      const circumference = 2 * Math.PI * radius;
+      return (
+        <div className="relative shrink-0" style={{ width: size, height: size }}>
+          <svg width={size} height={size} className="-rotate-90">
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke="rgba(255,255,255,.07)"
+              strokeWidth={stroke}
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={color}
+              strokeWidth={stroke}
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference - (circumference * percent) / 100}
+              style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)' }}
+            />
+          </svg>
+          <div className="absolute inset-0 grid place-items-center">
+            <span className="text-[13px] font-bold tabular-nums text-white">{percent}%</span>
+          </div>
+        </div>
+      );
+    }
+
+    function SectionHeading({ n, title, subtitle, done, accent, id }) {
+      return (
+        <div id={id} className="scroll-mt-24">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <span className="font-mono" style={{ color: accent }}>{n}</span>
+                <span className="h-px w-5 bg-white/15" />
+                <span>{done ? 'Completado' : 'Paso de la ruta'}</span>
+              </div>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-[27px]">{title}</h2>
+            </div>
+            {done && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300 ring-1 ring-inset ring-emerald-400/20">
+                <Icon name="check" className="h-3 w-3" /> Listo
+              </span>
+            )}
+          </div>
+          {subtitle && <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-slate-500">{subtitle}</p>}
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Sidebar                                                            */
+    /* ------------------------------------------------------------------ */
+
+    function Sidebar({ activeId, onSelect, status, percent, doneSteps, onReset, open, onClose }) {
+      return (
+        <>
+          {open && (
+            <div
+              className="fixed inset-0 z-30 bg-black/70 backdrop-blur-sm animate-fade lg:hidden"
+              onClick={onClose}
+              aria-hidden="true"
+            />
+          )}
+
+          <aside
+            className={
+              'fixed inset-y-0 left-0 z-40 flex w-[302px] flex-col border-r border-white/[0.06] bg-[#070C11] transition-transform duration-300 ease-out lg:translate-x-0 ' +
+              (open ? 'translate-x-0' : '-translate-x-full')
+            }
+            aria-label="Navegación de la ruta"
+          >
+            <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/[0.06] px-5">
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-sky-400/20 to-emerald-400/10 text-sky-300 ring-1 ring-white/10">
+                <Icon name="network" className="h-[18px] w-[18px]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[15px] font-bold tracking-tight text-white">Redes 2</p>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-500">Ruta de autoestudio</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="ml-auto grid h-8 w-8 place-items-center rounded-lg text-slate-500 transition hover:bg-white/5 hover:text-white lg:hidden"
+                aria-label="Cerrar menú"
+              >
+                <Icon name="x" className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mx-4 mt-4 shrink-0 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
+              <div className="flex items-center gap-3.5">
+                <ProgressRing percent={percent} color="#22D3EE" />
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-white">Tu progreso</p>
+                  <p className="mt-0.5 text-[11px] text-slate-500">
+                    {doneSteps} de {TOTAL_STEPS} pasos completados
+                  </p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                    {percent === 100 ? 'Ruta completada. Repasa cuando quieras.' : 'Avanza paso a paso, sin prisa.'}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 flex gap-1">
+                {MODULES.map((module) => (
+                  <div
+                    key={module.id}
+                    className="h-1 flex-1 rounded-full transition-colors duration-500"
+                    style={{ backgroundColor: status[module.id].done ? module.accent : 'rgba(255,255,255,.1)' }}
+                    title={module.title}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex items-center justify-between px-5 pb-2 pt-5">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">Roadmap</p>
+                <p className="text-[9px] font-medium text-slate-600">{MODULES.length} módulos</p>
+              </div>
+
+              <nav className="relative min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+                <div className="pointer-events-none absolute bottom-8 left-[35px] top-6 w-px bg-gradient-to-b from-white/10 via-white/[0.06] to-transparent" />
+
+                {MODULES.map((module) => {
+                  const st = status[module.id];
+                  const isActive = activeId === module.id;
+                  return (
+                    <button
+                      key={module.id}
+                      onClick={() => onSelect(module.id)}
+                      className={
+                        'relative flex w-full gap-3 rounded-xl p-2.5 text-left transition-colors ' +
+                        (isActive ? 'bg-white/[0.055] ring-1 ring-inset ring-white/10' : 'hover:bg-white/[0.025]')
+                      }
+                      aria-current={isActive ? 'step' : undefined}
+                    >
+                      <span
+                        className="relative z-10 mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border text-[10px] font-bold transition"
+                        style={
+                          st.done
+                            ? { backgroundColor: module.accent, borderColor: module.accent, color: '#05080C' }
+                            : isActive
+                              ? { borderColor: alpha(module.accent, '88'), color: module.accent, backgroundColor: alpha(module.accent, '14') }
+                              : { borderColor: 'rgba(255,255,255,.12)', color: '#7C8A99' }
+                        }
+                      >
+                        {st.done ? <Icon name="check" className="h-3.5 w-3.5" /> : module.n}
+                      </span>
+
+                      <span className="min-w-0 flex-1 py-0.5">
+                        <span className="flex items-center gap-2">
+                          <span className={'truncate text-[13px] font-semibold ' + (isActive ? 'text-white' : 'text-slate-300')}>
+                            {module.title}
+                          </span>
+                        </span>
+                        <span className="mt-1.5 flex items-center gap-1">
+                          {st.requiredKeys.map((key) => (
+                            <span
+                              key={key}
+                              className="h-1 w-4 rounded-full transition-colors"
+                              style={{ backgroundColor: st[key] ? module.accent : 'rgba(255,255,255,.12)' }}
+                              title={key === 'theory' ? 'Teoría' : key === 'video' ? 'Video' : 'Práctica'}
+                            />
+                          ))}
+                          <span className="ml-auto text-[10px] tabular-nums text-slate-600">
+                            {st.count}/{st.total}
+                          </span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="shrink-0 border-t border-white/[0.06] p-4">
+              <button
+                onClick={onReset}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2.5 text-[11px] font-medium text-slate-400 transition hover:border-rose-400/30 hover:bg-rose-400/[0.06] hover:text-rose-300"
+              >
+                <Icon name="rotate" className="h-3.5 w-3.5" /> Reiniciar progreso
+              </button>
+              <p className="mt-3 text-center text-[9px] leading-relaxed text-slate-600">
+                Tu avance se guarda en este navegador.
+              </p>
+            </div>
+          </aside>
+        </>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Teoría                                                             */
+    /* ------------------------------------------------------------------ */
+
+    function TheorySection({ module, watchedTheory, onMark, feynman, onFeynman }) {
+      const accent = module.accent;
+
+      return (
+        <section className="pt-9">
+          <SectionHeading
+            id="teoria"
+            n="01"
+            title="Teoría sin jerga"
+            subtitle="Primero la idea, después el nombre técnico. Si puedes contarlo con una analogía, ya lo entendiste."
+            done={watchedTheory}
+            accent={accent}
+          />
+
+          <div
+            className="mt-5 overflow-hidden rounded-3xl p-[1px]"
+            style={{ background: 'linear-gradient(135deg, ' + alpha(accent, '55') + ', rgba(255,255,255,.06) 45%, transparent 75%)' }}
+          >
+            <div className="rounded-[23px] bg-[#080D13] p-5 sm:p-7">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: accent }}>
+                <Icon name="sparkles" className="h-3.5 w-3.5" />
+                Analogía Feynman
+              </div>
+              <p className="mt-3 text-[17px] leading-[1.75] text-slate-200 sm:text-[19px]">{module.analogy}</p>
+              <div className="mt-5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-[13px] leading-relaxed">
+                <span className="font-semibold text-white">En una frase: </span>
+                <span className="text-slate-400">{module.oneLiner}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4">
+            {module.sections.map((section) => (
+              <article key={section.title} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 sm:p-6">
+                <div className="flex items-start gap-3.5">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl" style={{ backgroundColor: alpha(accent, '14'), color: accent }}>
+                    <Icon name={section.icon} className="h-[18px] w-[18px]" />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-white sm:text-base">{section.title}</h3>
+                    {section.intro && <p className="mt-1 text-[13px] leading-relaxed text-slate-500">{section.intro}</p>}
+                  </div>
+                </div>
+
+                {section.bullets && (
+                  <ul className="mt-4 space-y-3">
+                    {section.bullets.map((bullet) => (
+                      <li key={bullet.t} className="flex gap-2.5 text-[13px] leading-relaxed">
+                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: accent }} />
+                        <span className="text-slate-400">
+                          <strong className="font-semibold text-slate-200">{bullet.t}</strong>
+                          {' — '}{bullet.d}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {section.table && (
+                  <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
+                    <table className="w-full min-w-[430px] text-left text-[12.5px]">
+                      <thead className="bg-white/[0.03] text-[9.5px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        <tr>
+                          {section.table.headers.map((header) => (
+                            <th key={header} className="px-3.5 py-2.5 font-semibold">{header}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.05]">
+                        {section.table.rows.map((row, rowIndex) => (
+                          <tr key={rowIndex} className="transition-colors hover:bg-white/[0.02]">
+                            {row.map((cell, cellIndex) => (
+                              <td
+                                key={cellIndex}
+                                className={
+                                  'px-3.5 py-2.5 ' +
+                                  (cellIndex === 0 ? 'font-medium text-slate-200' : 'text-slate-400')
+                                }
+                              >
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {section.example && (
+                  <div className="mt-4 rounded-xl border border-white/[0.07] bg-black/40 p-3.5 font-mono text-[11.5px] leading-relaxed sm:text-xs">
+                    <div className="break-all text-slate-500">{section.example.from}</div>
+                    <div className="mt-1.5 flex items-start gap-2">
+                      <Icon name="arrowRight" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span className="break-all font-semibold" style={{ color: accent }}>{section.example.to}</span>
+                    </div>
+                  </div>
+                )}
+
+                {section.note && (
+                  <div className="mt-4 border-l-2 pl-3 text-[12px] leading-relaxed text-slate-500" style={{ borderColor: alpha(accent, '66') }}>
+                    {section.note}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.015] p-4 sm:p-5">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+              <Icon name="zap" className="h-3.5 w-3.5" style={{ color: accent }} />
+              Micro-repaso
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {module.chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="rounded-full border px-2.5 py-1 text-[11px] font-medium"
+                  style={{ borderColor: alpha(accent, '33'), backgroundColor: alpha(accent, '0D'), color: '#CBD5E1' }}
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.015] p-5">
+            <div className="flex items-start gap-3">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-amber-300/90">
+                <Icon name="lightbulb" className="h-[18px] w-[18px]" />
+              </div>
+              <div>
+                <h3 className="text-[14px] font-semibold text-white">Tu turno: explícalo como si tuvieras 12 años</h3>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">
+                  Sin palabras técnicas. Si te trabas, vuelve a la analogía. Se guarda automáticamente.
+                </p>
+              </div>
+            </div>
+            <textarea
+              value={feynman}
+              onChange={(event) => onFeynman(event.target.value)}
+              rows={4}
+              placeholder={module.feynmanPrompt}
+              className="mt-3 w-full resize-y rounded-xl border border-white/10 bg-black/30 px-3.5 py-3 text-[13px] leading-relaxed text-slate-200 placeholder:text-slate-600 focus:border-white/25 focus:outline-none focus:ring-2 focus:ring-white/[0.06]"
+            />
+            <div className="mt-1 flex items-center justify-between text-[10px] text-slate-600">
+              <span>Técnica Feynman · explicar para entender</span>
+              <span className="tabular-nums">{feynman.trim().length} caracteres</span>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            {watchedTheory ? (
+              <span className="inline-flex items-center gap-2 rounded-xl bg-emerald-400/10 px-4 py-2.5 text-[13px] font-medium text-emerald-300 ring-1 ring-inset ring-emerald-400/20">
+                <Icon name="check" className="h-4 w-4" /> Teoría completada
+              </span>
+            ) : (
+              <button
+                onClick={onMark}
+                className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-[#05080C] transition hover:brightness-110 active:scale-[0.99]"
+                style={{ backgroundColor: accent }}
+              >
+                Ya lo entendí <Icon name="arrowRight" className="h-4 w-4" />
+              </button>
+            )}
+            <span className="text-[11px] text-slate-600">Marca este paso para avanzar en tu ruta.</span>
+          </div>
+        </section>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Video                                                              */
+    /* ------------------------------------------------------------------ */
+
+    function VideoSection({ module, watched, onWatched }) {
+      const accent = module.accent;
+      const videos = module.videos || [];
+      const [index, setIndex] = useState(0);
+      const [failed, setFailed] = useState(false);
+      const videoRef = useRef(null);
+      const current = videos[index];
+
+      useEffect(() => {
+        setFailed(false);
+        if (!current) return;
+
+        const timer = setTimeout(() => {
+          const element = videoRef.current;
+          if (element && element.readyState === 0) setFailed(true);
+        }, 5000);
+
+        return () => clearTimeout(timer);
+      }, [index, current ? current.src : '']);
+
+      function selectVideo(nextIndex) {
+        setIndex(nextIndex);
+        setFailed(false);
+      }
+
+      return (
+        <section className="pt-10">
+          <SectionHeading
+            id="video"
+            n="02"
+            title="Video de la clase"
+            subtitle={module.videoOptional
+              ? 'Aún no hay grabación para este tema. Puedes avanzar sin ella; el video es un extra.'
+              : 'Mira, pausa y anota una idea nueva. Puedes marcar el paso al terminar.'}
+            done={watched}
+            accent={accent}
+          />
+
+          <div className="mt-5 rounded-3xl border border-white/[0.07] bg-white/[0.02] p-3 sm:p-4">
+            {videos.length > 1 && (
+              <div className="mb-3 flex flex-wrap gap-2 px-0.5">
+                {videos.map((video, videoIndex) => {
+                  const selected = videoIndex === index;
+                  return (
+                    <button
+                      key={video.src}
+                      onClick={() => selectVideo(videoIndex)}
+                      className={
+                        'inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition ' +
+                        (selected ? '' : 'border-white/10 bg-transparent text-slate-500 hover:border-white/20 hover:text-slate-300')
+                      }
+                      style={selected ? { borderColor: alpha(accent, '55'), backgroundColor: alpha(accent, '14'), color: accent } : undefined}
+                    >
+                      <Icon name="video" className="h-3.5 w-3.5" />
+                      {video.label}
+                      <span className="text-[9px] uppercase tracking-wider opacity-60">{video.tag}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
+              {current && !failed ? (
+                <video
+                  key={current.src}
+                  ref={videoRef}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="aspect-video w-full bg-black"
+                  onLoadedMetadata={() => setFailed(false)}
+                  onEnded={onWatched}
+                  onError={() => setFailed(true)}
+                >
+                  <source src={current.src} type="video/mp4" />
+                  Tu navegador no soporta el reproductor HTML5.
+                </video>
+              ) : (
+                <div
+                  className="flex aspect-video w-full flex-col items-center justify-center gap-4 px-6 text-center"
+                  style={{ background: 'radial-gradient(circle at 50% 28%, ' + alpha(accent, '1A') + ', #05080C 72%)' }}
+                >
+                  <div
+                    className="grid h-14 w-14 place-items-center rounded-2xl border"
+                    style={{ borderColor: alpha(accent, '40'), backgroundColor: alpha(accent, '12'), color: accent }}
+                  >
+                    <Icon name="video" className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-semibold text-slate-200">
+                      {module.videoOptional ? 'Video todavía no disponible' : 'No se pudo cargar el video'}
+                    </p>
+                    <p className="mx-auto mt-1.5 max-w-md text-[12px] leading-relaxed text-slate-500">
+                      {module.videoOptional ? (
+                        <>Coloca el archivo <code className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[11px] text-slate-300">video4-qos.mp4</code> en esta carpeta y recarga la página. Mientras tanto, el paso no cuenta para tu progreso.</>
+                      ) : (
+                        <>Verifica que el archivo esté en esta misma carpeta y que sea un MP4 compatible (H.264).</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 px-1">
+              <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                <span className={'h-1.5 w-1.5 rounded-full ' + (current && !failed ? 'bg-rose-400' : 'bg-slate-600')} />
+                {current ? current.label : 'Sin grabación'}
+                {watched && (
+                  <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 ring-1 ring-inset ring-emerald-400/20">
+                    <Icon name="check" className="h-2.5 w-2.5" /> Visto
+                  </span>
+                )}
+              </div>
+
+              {!failed && current && (
+                watched ? (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-300">
+                    <Icon name="check" className="h-3.5 w-3.5" /> Video marcado como visto
+                  </span>
+                ) : (
+                  <button
+                    onClick={onWatched}
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[11.5px] font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/[0.07]"
+                  >
+                    <Icon name="check" className="h-3.5 w-3.5" /> Marcar video como visto
+                  </button>
+                )
+              )}
+            </div>
+
+            {module.videoOptional && (
+              <p className="mt-2 px-1 text-[10px] leading-relaxed text-slate-600">
+                Este tema se puede completar con la teoría y la práctica. El video aparece automáticamente cuando agregues el archivo.
+              </p>
+            )}
+          </div>
+        </section>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Práctica (Active Recall)                                           */
+    /* ------------------------------------------------------------------ */
+
+    function QuizSection({ module, bestScore, onScore }) {
+      const accent = module.accent;
+      const questions = module.quiz;
+      const [answers, setAnswers] = useState(() => questions.map(() => null));
+
+      const answeredCount = answers.filter((answer) => answer !== null).length;
+      const allAnswered = answeredCount === questions.length;
+      const score = answers.reduce((total, answer, index) => total + (answer === questions[index].answer ? 1 : 0), 0);
+
+      function selectOption(questionIndex, optionIndex) {
+        if (answers[questionIndex] !== null) return;
+
+        const next = answers.map((answer, index) => (index === questionIndex ? optionIndex : answer));
+        setAnswers(next);
+
+        if (next.every((answer) => answer !== null)) {
+          const finalScore = next.reduce(
+            (total, answer, index) => total + (answer === questions[index].answer ? 1 : 0),
+            0
+          );
+          onScore(finalScore);
+        }
+      }
+
+      function retry() {
+        setAnswers(questions.map(() => null));
+      }
+
+      const message = score === questions.length
+        ? 'Perfecto. Puedes explicar este tema sin mirar apuntes: sigue con el siguiente módulo.'
+        : score >= PASS_SCORE
+          ? 'Buen dominio. Repasa la que falló y avanza cuando puedas contarla con tus palabras.'
+          : 'Todavía no. Vuelve a la analogía, mira el video y repite la práctica. Fallar aquí es parte de aprender.';
+
+      return (
+        <section className="pt-10">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <SectionHeading
+              id="practica"
+              n="03"
+              title="Práctica · Active Recall"
+              subtitle="Responde sin mirar arriba. La corrección y la justificación aparecen al instante."
+              done={bestScore !== null && bestScore >= PASS_SCORE}
+              accent={accent}
+            />
+            <div className="mb-1 flex items-center gap-2">
+              {bestScore !== null && (
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[10px] font-medium text-slate-500">
+                  Mejor: {bestScore}/{questions.length}
+                </span>
+              )}
+              <span
+                className="rounded-full px-2.5 py-1 text-[10px] font-semibold tabular-nums"
+                style={{ backgroundColor: alpha(accent, '14'), color: accent }}
+              >
+                {answeredCount}/{questions.length} respondidas
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3.5">
+            {questions.map((question, questionIndex) => {
+              const picked = answers[questionIndex];
+              const isAnswered = picked !== null;
+              const isCorrect = picked === question.answer;
+
+              return (
+                <article key={questionIndex} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 sm:p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-[13.5px] font-medium leading-relaxed text-slate-200 sm:text-[14px]">
+                      <span className="mr-2 font-mono text-[10px] text-slate-600">0{questionIndex + 1}</span>
+                      {question.question}
+                    </h3>
+                    {isAnswered && (
+                      <span
+                        className={
+                          'inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-wider ring-1 ring-inset ' +
+                          (isCorrect
+                            ? 'bg-emerald-400/10 text-emerald-300 ring-emerald-400/20'
+                            : 'bg-rose-400/10 text-rose-300 ring-rose-400/20')
+                        }
+                      >
+                        <Icon name={isCorrect ? 'check' : 'x'} className="h-2.5 w-2.5" />
+                        {isCorrect ? 'Correcto' : 'Incorrecto'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-3.5 grid gap-2">
+                    {question.options.map((option, optionIndex) => {
+                      const showResult = isAnswered;
+                      const isRight = question.answer === optionIndex;
+                      const isPicked = picked === optionIndex;
+                      const letter = ['A', 'B', 'C', 'D'][optionIndex];
+
+                      let container = 'border-white/[0.08] bg-white/[0.015] hover:border-white/20 hover:bg-white/[0.035]';
+                      if (showResult && isRight) container = 'border-emerald-400/40 bg-emerald-400/[0.07]';
+                      else if (showResult && isPicked) container = 'border-rose-400/40 bg-rose-400/[0.07]';
+                      else if (showResult) container = 'border-white/[0.05] bg-transparent opacity-45';
+
+                      let badge = 'border-white/10 bg-white/[0.04] text-slate-400';
+                      if (showResult && isRight) badge = 'border-emerald-400/30 bg-emerald-400/15 text-emerald-300';
+                      else if (showResult && isPicked) badge = 'border-rose-400/30 bg-rose-400/15 text-rose-300';
+
+                      return (
+                        <button
+                          key={optionIndex}
+                          onClick={() => selectOption(questionIndex, optionIndex)}
+                          disabled={showResult}
+                          aria-pressed={isPicked}
+                          className={
+                            'flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left text-[12.5px] leading-relaxed transition ' +
+                            container +
+                            (showResult ? ' cursor-default' : ' cursor-pointer')
+                          }
+                        >
+                          <span className={'grid h-6 w-6 shrink-0 place-items-center rounded-md border text-[10px] font-bold ' + badge}>
+                            {letter}
+                          </span>
+                          <span className={'flex-1 ' + (showResult && !isRight && !isPicked ? 'text-slate-500' : 'text-slate-300')}>
+                            {option}
+                          </span>
+                          {showResult && isRight && <Icon name="check" className="h-4 w-4 shrink-0 text-emerald-400" />}
+                          {showResult && isPicked && !isRight && <Icon name="x" className="h-4 w-4 shrink-0 text-rose-400" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {isAnswered && (
+                    <div className="mt-3 animate-fade rounded-xl border border-white/[0.06] bg-black/25 px-3.5 py-3 text-[11.5px] leading-relaxed text-slate-400">
+                      <span className="font-semibold text-slate-300">¿Por qué? </span>
+                      {question.why}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+
+          {allAnswered && (
+            <div className="mt-4 animate-rise overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.025]">
+              <div className="flex flex-wrap items-center gap-4 p-5">
+                <div
+                  className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border"
+                  style={{
+                    borderColor: score >= PASS_SCORE ? 'rgba(52,211,153,.3)' : 'rgba(251,113,133,.3)',
+                    backgroundColor: score >= PASS_SCORE ? 'rgba(52,211,153,.1)' : 'rgba(251,113,133,.1)'
+                  }}
+                >
+                  <div className="text-center">
+                    <span className={'block text-xl font-extrabold leading-none ' + (score >= PASS_SCORE ? 'text-emerald-300' : 'text-rose-300')}>
+                      {score}/{questions.length}
+                    </span>
+                    <span className="mt-1 block text-[8px] font-bold uppercase tracking-wider text-slate-500">puntaje</span>
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[14px] font-semibold text-white">
+                    {score === questions.length ? 'Dominio completo' : score >= PASS_SCORE ? 'Práctica superada' : 'Necesitas otro repaso'}
+                  </h3>
+                  <p className="mt-0.5 text-[11.5px] leading-relaxed text-slate-500">{message}</p>
+                </div>
+                <button
+                  onClick={retry}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[11.5px] font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/[0.07]"
+                >
+                  <Icon name="rotate" className="h-3.5 w-3.5" /> Reintentar
+                </button>
+              </div>
+              <div className="h-1 w-full bg-white/[0.06]">
+                <div
+                  className="h-full transition-all duration-700"
+                  style={{
+                    width: (score / questions.length) * 100 + '%',
+                    backgroundColor: score >= PASS_SCORE ? '#34D399' : '#FB7185'
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          <p className="mt-4 flex items-start gap-2 text-[10.5px] leading-relaxed text-slate-600">
+            <Icon name="lightbulb" className="mt-0.5 h-3 w-3 shrink-0" />
+            Active Recall: intentar recordar sin mirar fortalece la memoria mucho más que releer. Si fallas, vuelve a la analogía y reintenta.
+          </p>
+        </section>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Módulo completo                                                    */
+    /* ------------------------------------------------------------------ */
+
+    function ModuleView({ module, status, progress, actions }) {
+      const accent = module.accent;
+      const index = MODULES.findIndex((item) => item.id === module.id);
+      const previous = MODULES[index - 1];
+      const next = MODULES[index + 1];
+
+      const steps = [
+        { key: 'theory', n: '01', label: 'Teoría', icon: 'book', target: 'teoria' },
+        { key: 'video', n: '02', label: 'Video', icon: 'video', target: 'video' },
+        { key: 'quiz', n: '03', label: 'Práctica', icon: 'target', target: 'practica' }
+      ];
+
+      const currentKey = steps
+        .filter((step) => status.requiredKeys.indexOf(step.key) !== -1)
+        .find((step) => !status[step.key])?.key;
+
+      function scrollTo(id) {
+        const element = document.getElementById(id);
+        if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      return (
+        <div className="animate-rise">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em]"
+              style={{ backgroundColor: alpha(accent, '16'), color: accent, boxShadow: 'inset 0 0 0 1px ' + alpha(accent, '30') }}
+            >
+              Módulo {module.n}
+            </span>
+            <span className="text-[9.5px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+              Redes 2 · {module.short}
+            </span>
+          </div>
+
+          <h1 className="mt-3 max-w-3xl text-[30px] font-extrabold leading-[1.15] tracking-[-0.02em] text-white sm:text-[38px] md:text-[42px]">
+            {module.title}
+          </h1>
+          <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-slate-400 sm:text-[14.5px]">
+            {module.tagline} <span className="text-slate-600">{module.intro}</span>
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10.5px] text-slate-500">
+            <span className="inline-flex items-center gap-1.5"><Icon name="clock" className="h-3.5 w-3.5" /> {module.duration} de estudio</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="layers" className="h-3.5 w-3.5" /> {status.total} pasos guiados{module.videoOptional ? ' + video opcional' : ''}</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="target" className="h-3.5 w-3.5" /> Práctica de 3 preguntas</span>
+          </div>
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+            {steps.map((step) => {
+              const done = status[step.key];
+              const isCurrent = step.key === currentKey && !done;
+              const optional = step.key === 'video' && module.videoOptional;
+              const optionalMissing = optional && !done;
+
+              return (
+                <button
+                  key={step.key}
+                  onClick={() => scrollTo(step.target)}
+                  className={
+                    'group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ' +
+                    (done
+                      ? 'border-emerald-400/20 bg-emerald-400/[0.045]'
+                      : isCurrent
+                        ? 'bg-white/[0.035] hover:bg-white/[0.05]'
+                        : optionalMissing
+                          ? 'border-white/[0.05] bg-white/[0.012] hover:bg-white/[0.025]'
+                          : 'border-white/[0.06] bg-white/[0.015] opacity-60 hover:opacity-100')
+                  }
+                  style={isCurrent ? { borderColor: alpha(accent, '55') } : undefined}
+                >
+                  <span
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-lg"
+                    style={
+                      done
+                        ? { backgroundColor: 'rgba(52,211,153,.12)', color: '#6EE7B7' }
+                        : isCurrent
+                          ? { backgroundColor: alpha(accent, '16'), color: accent }
+                          : { backgroundColor: 'rgba(255,255,255,.04)', color: '#64748B' }
+                    }
+                  >
+                    <Icon name={done ? 'check' : step.icon} className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[8.5px] font-bold uppercase tracking-[0.16em] text-slate-600">Paso {step.n}</span>
+                    <span className="block truncate text-[12.5px] font-semibold text-slate-200">{step.label}</span>
+                  </span>
+                  <span
+                    className={
+                      'ml-auto shrink-0 text-[9px] font-bold uppercase tracking-wider ' +
+                      (done ? 'text-emerald-400/80' : isCurrent ? '' : 'text-slate-600')
+                    }
+                    style={isCurrent ? { color: accent } : undefined}
+                  >
+                    {done ? 'Listo' : optionalMissing ? (status.video ? 'Listo' : 'Opcional') : isCurrent ? 'Ahora' : 'Pendiente'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <TheorySection
+            module={module}
+            watchedTheory={status.theory}
+            onMark={() => actions.markTheory(module.id)}
+            feynman={progress.feynman[module.id] || ''}
+            onFeynman={(text) => actions.saveFeynman(module.id, text)}
+          />
+
+          <VideoSection
+            module={module}
+            watched={status.video}
+            onWatched={() => actions.markVideo(module.id)}
+          />
+
+          <QuizSection
+            module={module}
+            bestScore={status.score}
+            onScore={(score) => actions.recordQuiz(module.id, score)}
+          />
+
+          <div className="mt-14 flex flex-col-reverse gap-3 border-t border-white/[0.07] pt-6 sm:flex-row sm:items-center sm:justify-between">
+            {previous ? (
+              <button
+                onClick={() => actions.goTo(previous.id)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[12px] font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/[0.06]"
+              >
+                <Icon name="arrowLeft" className="h-3.5 w-3.5" /> {previous.short}
+              </button>
+            ) : (
+              <span />
+            )}
+
+            <span className="text-center text-[10px] font-medium uppercase tracking-[0.16em] text-slate-600">
+              {index + 1} / {MODULES.length} módulos
+            </span>
+
+            {next ? (
+              <button
+                onClick={() => actions.goTo(next.id)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-semibold text-[#05080C] transition hover:brightness-110 active:scale-[0.99]"
+                style={{ backgroundColor: accent }}
+              >
+                Siguiente: {next.short} <Icon name="arrowRight" className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <span className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400/10 px-4 py-2.5 text-[12px] font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/20">
+                <Icon name="check" className="h-3.5 w-3.5" /> Fin de la ruta
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Modal de reinicio                                                  */
+    /* ------------------------------------------------------------------ */
+
+    function ResetModal({ onCancel, onConfirm }) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-fade" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+          <div className="w-full max-w-sm animate-rise rounded-2xl border border-white/10 bg-[#0B1219] p-5 shadow-soft">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-rose-400/10 text-rose-300 ring-1 ring-inset ring-rose-400/20">
+              <Icon name="alert" className="h-5 w-5" />
+            </div>
+            <h2 id="reset-title" className="mt-4 text-[17px] font-bold text-white">¿Reiniciar toda tu ruta?</h2>
+            <p className="mt-1.5 text-[12px] leading-relaxed text-slate-500">
+              Se borrarán el progreso, las notas de Feynman y tus mejores puntajes en este navegador. No se puede deshacer.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={onCancel}
+                className="flex-1 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-[12px] font-medium text-slate-300 transition hover:bg-white/[0.07]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={onConfirm}
+                className="flex-1 rounded-xl bg-rose-500/90 px-3 py-2.5 text-[12px] font-semibold text-white transition hover:bg-rose-400"
+              >
+                Sí, reiniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  App                                                                */
+    /* ------------------------------------------------------------------ */
+
+    function App() {
+      const [progress, setProgress] = useState(loadProgress);
+      const [activeId, setActiveId] = useState(() => {
+        try {
+          const savedModule = localStorage.getItem(MODULE_KEY);
+          return MODULES.some((module) => module.id === savedModule) ? savedModule : MODULES[0].id;
+        } catch (error) {
+          return MODULES[0].id;
+        }
+      });
+      const [sidebarOpen, setSidebarOpen] = useState(false);
+      const [resetOpen, setResetOpen] = useState(false);
+
+      const active = MODULES.find((module) => module.id === activeId) || MODULES[0];
+
+      useEffect(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        } catch (error) {
+          /* El progreso sigue en memoria aunque el navegador bloquee localStorage. */
+        }
+      }, [progress]);
+
+      useEffect(() => {
+        document.body.style.overflow = sidebarOpen || resetOpen ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+      }, [sidebarOpen, resetOpen]);
+
+      useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        try {
+          localStorage.setItem(MODULE_KEY, activeId);
+        } catch (error) {
+          /* Sin persistencia del módulo si el navegador bloquea localStorage. */
+        }
+      }, [activeId]);
+
+      const status = useMemo(() => {
+        const result = {};
+
+        MODULES.forEach((module) => {
+          const quiz = progress.quiz[module.id];
+          const best = quiz && typeof quiz.best === 'number' ? quiz.best : null;
+          const requiredKeys = module.videoOptional ? ['theory', 'quiz'] : ['theory', 'video', 'quiz'];
+
+          const entry = {
+            theory: !!progress.theory[module.id],
+            video: !!progress.video[module.id],
+            quiz: best !== null && best >= PASS_SCORE,
+            score: best,
+            requiredKeys,
+            total: requiredKeys.length
+          };
+
+          entry.count = requiredKeys.filter((key) => entry[key]).length;
+          entry.done = entry.count === entry.total;
+          result[module.id] = entry;
+        });
+
+        return result;
+      }, [progress]);
+
+      const doneSteps = useMemo(
+        () => MODULES.reduce((total, module) => total + status[module.id].count, 0),
+        [status]
+      );
+      const percent = Math.round((doneSteps / TOTAL_STEPS) * 100);
+
+      const actions = useMemo(() => ({
+        markTheory(id) {
+          setProgress((previous) => ({
+            ...previous,
+            theory: { ...previous.theory, [id]: true }
+          }));
+        },
+        markVideo(id) {
+          setProgress((previous) => ({
+            ...previous,
+            video: { ...previous.video, [id]: true }
+          }));
+        },
+        recordQuiz(id, score) {
+          setProgress((previous) => {
+            const previousQuiz = previous.quiz[id] || { best: 0, attempts: 0 };
+            return {
+              ...previous,
+              quiz: {
+                ...previous.quiz,
+                [id]: {
+                  best: Math.max(previousQuiz.best || 0, score),
+                  last: score,
+                  attempts: (previousQuiz.attempts || 0) + 1
+                }
+              }
+            };
+          });
+        },
+        saveFeynman(id, text) {
+          setProgress((previous) => ({
+            ...previous,
+            feynman: { ...previous.feynman, [id]: text }
+          }));
+        },
+        goTo(id) {
+          setActiveId(id);
+          setSidebarOpen(false);
+        }
+      }), []);
+
+      function resetAll() {
+        setProgress(emptyProgress());
+        try {
+          localStorage.removeItem(MODULE_KEY);
+        } catch (error) {
+          /* Nada que limpiar si localStorage no está disponible. */
+        }
+        setActiveId(MODULES[0].id);
+        setResetOpen(false);
+        setSidebarOpen(false);
+      }
+
+      return (
+        <div className="min-h-screen bg-ink-950">
+          <div
+            className="pointer-events-none fixed inset-0 z-0"
+            style={{
+              background:
+                'radial-gradient(1100px 560px at 18% -12%, rgba(56,189,248,.07), transparent 60%), radial-gradient(900px 520px at 92% 6%, rgba(167,139,250,.055), transparent 62%), radial-gradient(800px 500px at 60% 100%, rgba(52,211,153,.04), transparent 62%)'
+            }}
+            aria-hidden="true"
+          />
+
+          <Sidebar
+            activeId={activeId}
+            onSelect={(id) => actions.goTo(id)}
+            status={status}
+            percent={percent}
+            doneSteps={doneSteps}
+            onReset={() => setResetOpen(true)}
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+          />
+
+          <div className="relative z-10 lg:pl-[302px]">
+            <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#05080C]/80 backdrop-blur-xl">
+              <div className="flex h-16 items-center gap-3 px-4 sm:px-8">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-slate-400 transition hover:bg-white/[0.07] hover:text-white lg:hidden"
+                  aria-label="Abrir menú"
+                >
+                  <Icon name="menu" className="h-4 w-4" />
+                </button>
+
+                <div className="flex min-w-0 items-center gap-2 text-[11px]">
+                  <span className="hidden text-slate-500 sm:inline">Redes 2</span>
+                  <Icon name="chevronRight" className="hidden h-3 w-3 text-slate-700 sm:block" />
+                  <span className="font-semibold text-slate-200">Módulo {active.n}</span>
+                  <span className="hidden truncate text-slate-500 md:inline">· {active.title}</span>
+                </div>
+
+                <div className="ml-auto flex items-center gap-3">
+                  <div className="hidden items-center gap-2 sm:flex">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-600">Ruta</span>
+                    <div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-sky-400 via-violet-400 to-emerald-400 transition-all duration-700"
+                        style={{ width: percent + '%' }}
+                      />
+                    </div>
+                    <span className="w-8 text-right text-[10.5px] font-semibold tabular-nums text-slate-400">{percent}%</span>
+                  </div>
+
+                  <button
+                    onClick={() => setResetOpen(true)}
+                    className="grid h-8 w-8 place-items-center rounded-lg text-slate-500 transition hover:bg-white/5 hover:text-slate-200"
+                    aria-label="Reiniciar progreso"
+                    title="Reiniciar progreso"
+                  >
+                    <Icon name="rotate" className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <main className="mx-auto max-w-[980px] px-4 pb-20 pt-7 sm:px-8 sm:pt-10">
+              <ModuleView
+                key={active.id}
+                module={active}
+                status={status[active.id]}
+                progress={progress}
+                actions={actions}
+              />
+
+              <footer className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-white/[0.05] pt-5 text-[9.5px] text-slate-600 sm:flex-row">
+                <span>Redes 2 · Microlearning + Feynman + Active Recall</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="route" className="h-3 w-3" /> {doneSteps}/{TOTAL_STEPS} pasos · guardado local
+                </span>
+              </footer>
+            </main>
+          </div>
+
+          {resetOpen && <ResetModal onCancel={() => setResetOpen(false)} onConfirm={resetAll} />}
+        </div>
+      );
+    }
+
+    const container = document.getElementById('root');
+    ReactDOM.createRoot(container).render(<App />);
+  </script>
+</body>
+</html>
