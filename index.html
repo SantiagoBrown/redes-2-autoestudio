@@ -613,6 +613,10 @@
           { t: 'NDP reemplaza a ARP', d: 'Neighbor Discovery usa ICMPv6 (RS/RA, NS/NA y DAD) para descubrir vecinos y detectar direcciones duplicadas.' },
           { t: 'SLAAC', d: 'el host escucha el Router Advertisement, toma el prefijo /64 y se forma su propia dirección. Sin DHCP.' },
           { t: 'DHCPv6 sigue existiendo', d: 'se usa para DNS y otras opciones, o cuando la red marca las flags M/O.' },
+          { t: 'EUI-64', d: 'genera el Interface ID a partir de la dirección MAC del dispositivo, insertando fffe en el centro.' },
+          { t: 'Asignación manual', d: 'el administrador define la dirección completa cuando se requiere control total.' },
+          { t: 'Túneles de transición', d: '6to4, ISATAP y GRE transportan IPv6 sobre infraestructura IPv4 existente.' },
+          { t: 'NAT64 y DNS64', d: 'traducen entre IPv6 e IPv4 para hosts que solo hablan un protocolo.' },
           { t: 'Dual Stack', d: 'el equipo ejecuta IPv4 e IPv6 a la vez y elige según el destino; el DNS devuelve A o AAAA. Es la transición más común.' },
           { t: 'Túneles y traducción', d: '6in4 transporta IPv6 sobre IPv4; NAT64/DNS64 permite que un host solo IPv6 hable con destinos IPv4.' }
         ],
@@ -951,6 +955,41 @@
 
 
     const TOTAL_STEPS = MODULES.reduce((total, module) => total + (module.videoOptional ? 2 : 3), 0);
+
+    const RESOURCES = {
+      l2: [
+        { type: 'Guía', file: 'G1.pdf' },
+        { type: 'Diapositivas', file: 'recurso1.pdf' }
+      ],
+      stp: [
+        { type: 'Guía', file: 'G2.pdf' },
+        { type: 'Diapositivas', file: 'recurso2.pdf' }
+      ],
+      wan: [
+        { type: 'Guía', file: 'G3.pdf' },
+        { type: 'Diapositivas', file: 'recurso3.pdf' }
+      ],
+      qos: [
+        { type: 'Guía', file: 'G4.pdf' },
+        { type: 'Diapositivas', file: 'recurso4.pdf' }
+      ],
+      ipv6: [
+        { type: 'Guía', file: 'G5.pdf' },
+        { type: 'Diapositivas', file: 'recursog5.pdf' }
+      ],
+      automation: [
+        { type: 'Guía', file: 'G6.pdf' },
+        { type: 'Diapositivas', file: 'recurso6.pdf' }
+      ],
+      wanint: [
+        { type: 'Guía', file: 'G7.pdf' },
+        { type: 'Diapositivas', file: 'recurso7.pdf' }
+      ],
+      vpn: [
+        { type: 'Guía', file: 'G8.pdf' },
+        { type: 'Diapositivas', file: 'recurso8.pdf' }
+      ]
+    };
 
     /* ------------------------------------------------------------------ */
     /*  Iconos                                                             */
@@ -1822,6 +1861,40 @@
                 </button>
               );
             })}
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.015] p-4 sm:p-5">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+              <Icon name="book" className="h-3.5 w-3.5" style={{ color: accent }} />
+              Recursos de la clase
+            </div>
+            <p className="mt-1.5 text-[11.5px] leading-relaxed text-slate-500">
+              Abre la guía y las diapositivas de este tema. Los archivos deben estar en la misma carpeta que <code className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10.5px] text-slate-300">index.html</code>.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(RESOURCES[module.id] || []).map((resource) => (
+                <a
+                  key={resource.file}
+                  href={resource.file}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2 text-[11.5px] font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/[0.06]"
+                >
+                  <Icon name="arrowRight" className="h-3.5 w-3.5" />
+                  {resource.type}: {resource.file}
+                </a>
+              ))}
+              {module.videos && module.videos.map((video) => (
+                <span
+                  key={video.src}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-2 text-[11.5px] font-medium text-slate-400"
+                  title="Video de la clase (debe estar en la misma carpeta)"
+                >
+                  <Icon name="video" className="h-3.5 w-3.5" />
+                  Video: {video.src}
+                </span>
+              ))}
+            </div>
           </div>
 
           <TheorySection
